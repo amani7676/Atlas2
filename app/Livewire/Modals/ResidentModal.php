@@ -12,8 +12,9 @@ use App\Traits\livewire\RepositoryResolver;
 use App\Traits\livewire\ServiceResolver;
 use Carbon\Carbon;
 use Livewire\Component;
+use Morilog\Jalali\Jalalian;
 
-class ResidentModal extends Component // نام تغییر کرد
+class ResidentModal extends Component
 {
     use HasDateConversion;
     use RepositoryResolver;
@@ -22,13 +23,15 @@ class ResidentModal extends Component // نام تغییر کرد
     // Modal state
     public $showModal = false;
     public $selectedBed = null;
-    public $modalMode = 'add'; // 'add' یا 'edit'
+    public $modalMode = 'add';
     public $editingResidentId = null;
 
     // Form properties for resident
     public $full_name_modal = '';
     public $phone_modal = '';
-    public $age_modal = '';
+    public $age_modal = 0;
+    public $birth_date_jalali_modal = '';
+    public $birth_date_modal = '';
     public $job_modal = '';
     public $referral_source_modal = '';
     public $form_modal = false;
@@ -62,7 +65,6 @@ class ResidentModal extends Component // نام تغییر کرد
             'full_name_modal' => 'required|string|max:255',
             'payment_date_modal' => ['required', new PersianDate],
             'state_modal' => 'required|in:rezerve,nightly,active,leaving,exit',
-//            'phone_modal' => 'digits:11'
         ];
     }
 
@@ -70,7 +72,6 @@ class ResidentModal extends Component // نام تغییر کرد
         'full_name_modal.required' => 'نام و نام خانوادگی الزامی است',
         'payment_date_modal.required' => 'تاریخ پرداخت الزامی است',
         'state_modal.required' => 'وضعیت رو مشخص کنید',
-//        'phone_modal.digits' => 'شماره تلفن باید 11 رقم باشد'
     ];
 
     public function openAddModal($bedName, $roomName)
@@ -78,13 +79,13 @@ class ResidentModal extends Component // نام تغییر کرد
         $this->modalMode = 'add';
         $this->editingResidentId = null;
 
-        // پیدا کردن تخت
         $bed = Bed::with('room')
             ->where('name', $bedName)
             ->whereHas('room', function ($query) use ($roomName) {
                 $query->where('name', $roomName);
             })
             ->first();
+
         if ($bed) {
             $this->selectedBed = [
                 'id' => $bed->id,
@@ -109,9 +110,7 @@ class ResidentModal extends Component // نام تغییر کرد
     {
         $this->modalMode = 'edit';
         $this->editingResidentId = $residentId;
-//        $this->selectedBed =
 
-        // بارگذاری اطلاعات resident
         $resident = Resident::with(['contract' => function ($query) {
             $query->latest()->first();
         }, 'contract.bed.room'])->find($residentId);
@@ -119,7 +118,6 @@ class ResidentModal extends Component // نام تغییر کرد
         if ($resident) {
             $contract = $resident->contract;
 
-            // تنظیم اطلاعات تخت
             if ($contract && $contract->bed) {
                 $this->selectedBed = [
                     'id' => $contract->bed->id,
@@ -130,11 +128,19 @@ class ResidentModal extends Component // نام تغییر کرد
                 $this->selectedBed = null;
             }
 
-
-            // پر کردن فرم با اطلاعات موجود
             $this->full_name_modal = $resident->full_name ?? '';
             $this->phone_modal = $resident->phone ?? '';
             $this->age_modal = $resident->age ?? '';
+
+            // اصلاح بخش تبدیل تاریخ تولد
+            if ($resident->birth_date) {
+                $this->birth_date_modal = $resident->birth_date;
+                $this->birth_date_jalali_modal = Jalalian::forge($resident->birth_date)->format('Y/m/d');
+            } else {
+                $this->birth_date_modal = '';
+                $this->birth_date_jalali_modal = '';
+            }
+
             $this->job_modal = $resident->job ?? '';
             $this->referral_source_modal = $resident->referral_source ?? '';
             $this->form_modal = $resident->form ?? false;
@@ -150,6 +156,7 @@ class ResidentModal extends Component // نام تغییر کرد
             $this->showModal = true;
             $this->resetValidation();
             $this->dispatch('show-modal');
+
         } else {
             $this->dispatch('show-toast', [
                 'type' => 'error',
@@ -172,7 +179,6 @@ class ResidentModal extends Component // نام تغییر کرد
 
     public function updatePhoneModal($value)
     {
-
         $this->phone_modal = $value;
         $this->validateOnly('phone_modal');
     }
@@ -183,6 +189,8 @@ class ResidentModal extends Component // نام تغییر کرد
         $this->phone_modal = '';
         $this->age_modal = '';
         $this->job_modal = '';
+        $this->birth_date_modal = '';
+        $this->birth_date_jalali_modal = '';
         $this->referral_source_modal = '';
         $this->form_modal = false;
         $this->document_modal = false;
@@ -193,39 +201,36 @@ class ResidentModal extends Component // نام تغییر کرد
         $this->resetValidation();
     }
 
-
-
     public function saveResident()
     {
         $this->phone_modal = str_replace('-', '', $this->phone_modal);
         $this->validate();
 
-        try {
-            if ($this->modalMode == 'add') {
-                $this->createNewResident();
-            } else {
-                $this->updateExistingResident();
-            }
-        } catch (\Exception $e) {
-            $this->dispatch('show-toast', [
-                'type' => 'error',
-                'title' => 'ناموفق!',
-                'description' => 'خطا در انجام عملیات: ' . $e->getMessage(),
-                'timer' => 3000
-            ]);
-            $this->closeModal();
+        if ($this->modalMode == 'add') {
+            $this->createNewResident();
+        } else {
+            $this->updateExistingResident();
         }
+
+        $this->closeModal();
     }
 
     private function createNewResident()
     {
         $this->start_date = Carbon::now()->format('Y-m-d');
         $this->payment_date_modal = $this->toMiladi($this->payment_date_modal);
-        // ایجاد resident جدید
+
+        // تبدیل تاریخ تولد به میلادی قبل از ذخیره
+        $birthDateMiladi = null;
+        if ($this->birth_date_modal) {
+            $birthDateMiladi = $this->birth_date_modal; // از آپدیت متد استفاده می‌کنیم
+        }
+
         $resident = Resident::create([
             'full_name' => $this->full_name_modal,
             'phone' => $this->phone_modal,
             'age' => $this->age_modal ?: null,
+            'birth_date' => $birthDateMiladi,
             'job' => $this->job_modal ?: null,
             'referral_source' => $this->referral_source_modal ?: null,
             'form' => $this->form_modal,
@@ -234,7 +239,6 @@ class ResidentModal extends Component // نام تغییر کرد
             'trust' => $this->trust_modal,
         ]);
 
-        // ایجاد contract
         $contract = Contract::create([
             'resident_id' => $resident->id,
             'bed_id' => $this->selectedBed['id'],
@@ -242,7 +246,7 @@ class ResidentModal extends Component // نام تغییر کرد
             'state' => $this->state_modal,
             'start_date' => $this->start_date,
         ]);
-        // بروزرسانی وضعیت تخت
+
         \App\Models\Bed::where('id', $this->selectedBed['id'])
             ->update([
                 'state' => 'active',
@@ -259,15 +263,18 @@ class ResidentModal extends Component // نام تغییر کرد
         ]);
 
         $this->dispatch('residentAdded');
-        $this->closeModal();
     }
 
-    private function updateExistingResident()
+    private function updateExistingResident(): void
     {
-//        dd($this->document_modal, $this->rent_modal, $this->trust_modal);
+
         $resident = Resident::find($this->editingResidentId);
         if ($resident) {
-            // بروزرسانی اطلاعات resident
+            // تبدیل تاریخ تولد به میلادی برای ذخیره در دیتابیس
+            $birthDateMiladi = null;
+            if ($this->birth_date_modal) {
+                $birthDateMiladi = $this->birth_date_modal; // از آپدیت متد استفاده می‌کنیم
+            }
             $resident->update([
                 'full_name' => $this->full_name_modal,
                 'phone' => $this->phone_modal,
@@ -278,9 +285,8 @@ class ResidentModal extends Component // نام تغییر کرد
                 'document' => $this->document_modal ?: false,
                 'rent' => $this->rent_modal,
                 'trust' => $this->trust_modal,
+                'birth_date' => $birthDateMiladi, // اصلاح شده
             ]);
-
-            // بروزرسانی contract
             $contract = $resident->contract()->latest()->first();
             if ($contract) {
                 $contract->update([
@@ -288,7 +294,7 @@ class ResidentModal extends Component // نام تغییر کرد
                     'state' => $this->state_modal,
                 ]);
             }
-            // بروزرسانی وضعیت تخت
+
             \App\Models\Bed::where('id', $contract->bed_id)
                 ->update([
                     'state' => 'active',
@@ -304,13 +310,56 @@ class ResidentModal extends Component // نام تغییر کرد
                 'timer' => 4000
             ]);
 
-            $this->dispatch('residentAdded'); // برای refresh کردن جدول
-            $this->closeModal();
+            $this->dispatch('residentAdded');
+        }
+    }
+
+    public function updatedBirthDateJalaliModal($value)
+    {
+        if ($value) {
+            try {
+                if (preg_match('/^\d{4}\/\d{1,2}\/\d{1,2}$/', $value)) {
+                    $jalaliDate = Jalalian::fromFormat('Y/m/d', $value);
+                    $miladiDate = $jalaliDate->toCarbon();
+
+                    if ($miladiDate->isValid()) {
+                        // ذخیره تاریخ میلادی در متغیر داخلی
+                        $this->birth_date_modal = $miladiDate->format('Y-m-d');
+                        $this->calculateAge();
+                    } else {
+                        throw new \Exception('تاریخ نامعتبر است');
+                    }
+                } else {
+                    throw new \Exception('فرمت تاریخ نامعتبر است');
+                }
+            } catch (\Exception $e) {
+                $this->birth_date_modal = '';
+                $this->age_modal = 0;
+                $this->dispatch('show-toast', [
+                    'type' => 'error',
+                    'title' => 'خطا!',
+                    'description' => 'لطفاً تاریخ تولد را به فرمت صحیح (مثال: 1400/01/01) وارد کنید',
+                    'timer' => 3000
+                ]);
+            }
+        } else {
+            $this->birth_date_modal = '';
+            $this->age_modal = 0;
+        }
+    }
+
+    public function calculateAge()
+    {
+        if ($this->birth_date_modal) {
+            $birthDate = Carbon::parse($this->birth_date_modal);
+            $this->age_modal = $birthDate->age;
+        } else {
+            $this->age_modal = 0;
         }
     }
 
     public function render()
     {
-        return view('livewire.modals.resident-modal'); // نام ویو تغییر کرد
+        return view('livewire.modals.resident-modal');
     }
 }

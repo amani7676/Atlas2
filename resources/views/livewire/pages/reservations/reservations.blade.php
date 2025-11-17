@@ -222,13 +222,13 @@
                                     </td>
                                     <td>
                                         <small class="text-muted">
-                                            {{ $reserve->created_at->format('Y/m/d H:i') }}
+                                            {{ $reserve->created_at_jalali }}
                                         </small>
                                     </td>
                                     <td>
                                         <div class="btn-group btn-group-sm">
                                             <button wire:click="edit({{ $reserve->id }})"
-                                                    class="btn btn-outline-primary"
+                                                    class="btn btn-outline-primary " style="margin-left: 10px;"
                                                     title="ویرایش">
                                                 <i class="fas fa-edit"></i>
                                             </button>

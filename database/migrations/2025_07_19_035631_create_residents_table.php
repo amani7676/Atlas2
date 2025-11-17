@@ -15,7 +15,8 @@ return new class extends Migration
              $table->id();
             $table->string('full_name');
             $table->string('phone')->nullable();
-            $table->bigInteger('age')->nullable();
+            $table->integer('age')->nullable()->default(0);
+            $table->date('birth_date')->nullable();
             $table->enum('job', [
                 'daneshjo_dolati',
                 'daneshjo_azad',
@@ -23,6 +24,7 @@ return new class extends Migration
                 'karmand_dolat',
                 'karmand_shakhse',
                 'azad',
+                'nurse',
                 'other'
             ])->nullable();
             $table->enum('referral_source', [

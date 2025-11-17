@@ -39,10 +39,18 @@
                         گزارش‌ها
                     </a>
                     <ul class="dropdown-menu">
-                        <li><a class="dropdown-item" href="{{ route("report.list_current_resident") }}">
+                        <li>
+                            <a class="dropdown-item" href="{{ route("report.list_current_resident") }}">
                                 <i class="fas fa-users"></i>
                                 اقای عنایتی
-                            </a></li>
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="{{ route("report.chart_one") }}">
+                                <i class="fas fa-users"></i>
+                                Chart One
+                            </a>
+                        </li>
                         <li><a class="dropdown-item" href="#">
                                 <i class="fas fa-sign-out-alt"></i>
                                 اقامتگران خروجی
@@ -67,7 +75,7 @@
 
             <!-- بخش جستجو با Livewire -->
             <div style="position: relative;">
-                <livewire:components.live-search />
+                <livewire:components.live-search/>
             </div>
         </div>
     </div>

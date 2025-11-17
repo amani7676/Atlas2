@@ -61,7 +61,12 @@ class Reservations extends Component
             $query->where('priority', $this->filterPriority);
         }
 
-        $this->reserves = $query->orderBy('created_at', 'desc')->get();
+// مرتب‌سازی بر اساس اولویت دلخواه
+        $query->orderByRaw("FIELD(priority, 'high', 'medium', 'low')")
+            ->orderBy('created_at', 'asc');
+
+        $this->reserves = $query->get();
+
     }
 
     public function updatedSearch(): void

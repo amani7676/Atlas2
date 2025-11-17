@@ -11,6 +11,7 @@
     },
     "dependencies": {
         "alpinejs": "^3.14.9",
-        "cute-alert": "^0.0.3"
+        "cute-alert": "^0.0.3",
+        "persian-datepicker": "^1.2.0"
     }
 }

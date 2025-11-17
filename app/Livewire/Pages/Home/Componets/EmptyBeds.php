@@ -10,6 +10,7 @@ use App\Services\Report\AllReportService;
 use App\Traits\HasDateConversion;
 use Carbon\Carbon;
 use Livewire\Component;
+use Morilog\Jalali\Jalalian;
 
 class EmptyBeds extends Component
 {
@@ -23,6 +24,8 @@ class EmptyBeds extends Component
     public $full_name = '';
     public $phone = '';
     public $age = '';
+    public $birth_date_jalali = '';
+    public $birth_date = '';
     public $job = '';
     public $referral_source = '';
     public $form = false;
@@ -86,6 +89,8 @@ class EmptyBeds extends Component
         $this->full_name = '';
         $this->phone = '';
         $this->age = '';
+        $this->birth_date_jalali = '';
+        $this->birth_date = '';
         $this->job = '';
         $this->referral_source = '';
         $this->form = false;
@@ -94,21 +99,62 @@ class EmptyBeds extends Component
         $this->trust = false;
         $this->state = '';
 
-
-
         $this->resetValidation();
     }
+
     public function updatedPhone($value)
     {
         $this->phone = str_replace('-', '', $value); // تبدیل به `09961351938`
         $this->validateOnly('phone');
     }
+
+    public function updatedBirthDateJalali($value)
+    {
+        if ($value) {
+            try {
+                if (preg_match('/^\d{4}\/\d{1,2}\/\d{1,2}$/', $value)) {
+                    $jalaliDate = Jalalian::fromFormat('Y/m/d', $value);
+                    $miladiDate = $jalaliDate->toCarbon();
+
+                    if ($miladiDate->isValid()) {
+                        // ذخیره تاریخ میلادی در متغیر داخلی
+                        $this->birth_date = $miladiDate->format('Y-m-d');
+                        $this->calculateAge();
+                    } else {
+                        throw new \Exception('تاریخ نامعتبر است');
+                    }
+                } else {
+                    throw new \Exception('فرمت تاریخ نامعتبر است');
+                }
+            } catch (\Exception $e) {
+                $this->birth_date = '';
+                $this->age = 0;
+                $this->dispatch('show-toast', [
+                    'type' => 'error',
+                    'title' => 'خطا!',
+                    'description' => 'لطفاً تاریخ تولد را به فرمت صحیح (مثال: 1400/01/01) وارد کنید',
+                    'timer' => 3000
+                ]);
+            }
+        } else {
+            $this->birth_date = '';
+            $this->age = 0;
+        }
+    }
+
+    public function calculateAge()
+    {
+        if ($this->birth_date) {
+            $birthDate = Carbon::parse($this->birth_date);
+            $this->age = $birthDate->age;
+        } else {
+            $this->age = 0;
+        }
+    }
+
     public function saveaddresident()
     {
-
-
         $this->validate();
-
 
         //change dates(payment,start) to miladi
         // Set default dates
@@ -116,12 +162,18 @@ class EmptyBeds extends Component
         $this->payment_date = $this->toMiladi($this->payment_date);
 
         try {
+            // تبدیل تاریخ تولد به میلادی قبل از ذخیره
+            $birthDateMiladi = null;
+            if ($this->birth_date) {
+                $birthDateMiladi = $this->birth_date; // از آپدیت متد استفاده می‌کنیم
+            }
 
             // Create resident
             $resident = Resident::create([
                 'full_name' => $this->full_name,
                 'phone' => $this->phone,
                 'age' => $this->age ?: null,
+                'birth_date' => $birthDateMiladi,
                 'job' => $this->job ?: null,
                 'referral_source' => $this->referral_source ?: null,
                 'form' => $this->form,
@@ -129,6 +181,7 @@ class EmptyBeds extends Component
                 'rent' => $this->rent,
                 'trust' => $this->trust,
             ]);
+
             // Create contract
             $contract = Contract::create([
                 'resident_id' => $resident->id,
@@ -138,11 +191,8 @@ class EmptyBeds extends Component
                 'start_date' => $this->start_date,
             ]);
 
-
-
-
             // Update bed status to inactive (occupied)
-             \App\Models\Bed::where('id', $this->selectedBed['id'])
+            \App\Models\Bed::where('id', $this->selectedBed['id'])
                 ->update(
                     [
                         'state' => 'active',
@@ -151,6 +201,7 @@ class EmptyBeds extends Component
                             : ($this->state === 'rezerve' ? 'rezerve' : null)
                     ]
                 );
+
             // !!! تغییر 'message' به 'description' برای هماهنگی با cute-alert
             $this->dispatch('show-toast', [ // !!! تغییر به 'show-toast'
                 'type' => 'success',

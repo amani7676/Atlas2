@@ -17,8 +17,9 @@
                                     <h5 class="mb-0">{{ $roomData['room']['name'] }}</h5>
                                 </div>
                                 <div class="card-body p-0" id="tableforvahed{{ $data['unit']['id'] }}">
-                                    <div class="table-responsive">
-                                        <table class="table table-sm table-hover modern-table" id="{{ $roomData['room']['name'] }}">
+                                    <!-- این کانتینر اسکرول افقی را به صورت شرطی مدیریت می‌کند -->
+                                    <div class="conditional-scroll-container">
+                                        <table class="table table-sm table-hover modern-table conditional-scroll-table" id="{{ $roomData['room']['name'] }}">
                                             <thead>
                                             <tr>
                                                 <th>تخت</th>
@@ -185,6 +186,76 @@
     </script>
     @endscript
     <style>
+        /* --- استایل‌های اصلی برای اسکرول شرطی در جداول تودرتو --- */
+
+        /* ۱. رفتار پیش‌فرض برای دسکتاپ: بدون اسکرول افقی */
+        .conditional-scroll-container {
+            overflow-x: visible; /* در دسکتاپ اسکرولی نمایش داده نمی‌شود */
+        }
+
+        .conditional-scroll-table {
+            width: 100%; /* جدول تمام عرض کانتینر را می‌گیرد */
+            margin-bottom: 0;
+        }
+
+        /* اجازه دادن به شکستن متن در دسکتاپ برای جا شدن در ستون‌ها */
+        @media (min-width: 992px) {
+            .conditional-scroll-table th,
+            .conditional-scroll-table td {
+                white-space: normal;
+            }
+            .action-buttons {
+                white-space: nowrap; /* دکمه‌ها نباید بشکنند */
+            }
+        }
+
+
+        /* ۲. رفتار برای موبایل و تبلت: فعال‌سازی اسکرول افقی */
+        /* این مدیا کوئری برای صفحات کوچکتر از 992px (تبلت و موبایل) اعمال می‌شود */
+        @media (max-width: 991.98px) {
+            .conditional-scroll-container {
+                overflow-x: auto; /* اسکرول افقی فعال می‌شود */
+                -webkit-overflow-scrolling: touch; /* اسکرول نرم در iOS */
+            }
+
+            .conditional-scroll-table {
+                /* عرض حداقلی برای جدول تا اسکرول فعال شود */
+                min-width: 800px; /* کمی کوچکتر چون فیلدها ورودی هستند */
+            }
+
+            /* جلوگیری از شکستن متن برای حفظ ساختار جدول */
+            .conditional-scroll-table th,
+            .conditional-scroll-table td {
+                white-space: nowrap;
+                vertical-align: middle;
+            }
+        }
+
+        /* --- استایل‌های بهبوددهنده برای موبایل --- */
+        @media (max-width: 768px) {
+            .conditional-scroll-table {
+                font-size: 0.8rem; /* فونت کوچکتر برای جا شدن */
+            }
+
+            .conditional-scroll-table th,
+            .conditional-scroll-table td {
+                padding: 0.4rem 0.5rem; /* فاصله داخلی کمتر */
+            }
+
+            /* کوچک کردن فیلدهای ورودی در موبایل */
+            .form-control-sm {
+                font-size: 0.8rem;
+                padding: 0.25rem 0.4rem;
+            }
+
+            /* استایل دکمه‌های عملیات برای لمس راحت‌تر */
+            .action-buttons .btn {
+                padding: 0.25rem 0.4rem;
+                font-size: 0.75rem;
+            }
+        }
+
+        /* استایل‌های اصلی شما که بدون تغییر باقی می‌مانند */
         .similar-bed {
             background-color: #7F8CAA; /* سیاه */
             color: #ffffff; /* متن سفید برای خوانایی */
@@ -205,6 +276,3 @@
         }
     </style>
 </div>
-
-
-

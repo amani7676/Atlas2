@@ -4,6 +4,7 @@ namespace App\Services\Core;
 
 use App\Repositories\UnitRepository;
 use App\Models\Unit;
+use App\Models\Contract;
 
 class UnitService
 {
@@ -63,17 +64,44 @@ class UnitService
                             'bed_count' => $room->bed_count,
                             'desc' => $room->desc,
                             'beds' => $room->beds->map(function ($bed) {
+                                $lastContract = $bed->contracts->last();
+                                $resident = $lastContract?->resident;
+                                
                                 return [
                                     'id' => $bed->id,
                                     'name' => $bed->name,
                                     'state' => $bed->state,
                                     'desc' => $bed->desc,
-                                    'resident' => $bed->contracts->last()?->resident ? [
-                                        'id' => $bed->contracts->last()->resident->id,
-                                        'full_name' => $bed->contracts->last()->resident->full_name,
-                                        'phone' => $bed->contracts->last()->resident->formatted_phone,
-                                        'age' => $bed->contracts->last()->resident->age,
-                                        'job' => $bed->contracts->last()->resident->job,
+                                    'resident' => $resident ? [
+                                        'id' => $resident->id,
+                                        'full_name' => $resident->full_name,
+                                        'phone' => $resident->phone,
+                                        'formatted_phone' => $resident->formatted_phone,
+                                        'age' => $resident->age,
+                                        'job' => $resident->job,
+                                        'referral_source' => $resident->referral_source,
+                                        'form' => $resident->form,
+                                        'rent' => $resident->rent,
+                                        'trust' => $resident->trust,
+                                        'document' => $resident->document,
+                                        'birth_date' => $resident->birth_date,
+                                        'contracts' => Contract::where('resident_id', $resident->id)
+                                            ->with('bed')
+                                            ->get()
+                                            ->map(function ($contract) {
+                                                return [
+                                                    'id' => $contract->id,
+                                                    'resident_id' => $contract->resident_id,
+                                                    'bed_id' => $contract->bed_id,
+                                                    'state' => $contract->state,
+                                                    'payment_date' => $contract->payment_date,
+                                                    'payment_date_jalali' => $contract->payment_date_jalali,
+                                                    'start_date' => $contract->start_date,
+                                                    'start_date_jalali' => $contract->start_date_jalali,
+                                                    'end_date' => $contract->end_date,
+                                                    'end_date_jalali' => $contract->end_date_jalali,
+                                                ];
+                                            })->values(),
                                     ] : null,
                                 ];
                             }),

@@ -19,3 +19,4 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 Route::get('/residents', [\App\Http\Controllers\Api\ResidentController::class, 'index']);
+Route::get('/units', [\App\Http\Controllers\Api\UnitController::class, 'index']);

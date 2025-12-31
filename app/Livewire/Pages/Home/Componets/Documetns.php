@@ -5,6 +5,7 @@ namespace App\Livewire\Pages\Home\Componets;
 use App\Models\Resident;
 use App\Services\Report\AllReportService;
 use Livewire\Component;
+use Livewire\Attributes\On;
 
 class Documetns extends Component
 {
@@ -20,6 +21,7 @@ class Documetns extends Component
     {
         $this->isExpanded = !$this->isExpanded;
     }
+    
     // public function getAllReportService(): AllReportService
     // {
     //     // اگر allReportService هنوز مقداردهی نشده، آن را از سرویس کانتینر لاراول دریافت کن

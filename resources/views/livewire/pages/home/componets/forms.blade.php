@@ -39,7 +39,21 @@
                                 <td class="d-none d-md-table-cell" style="max-width: 200px;">
                                     @foreach ($data['notes'] as $note)
                                         @if ($note['type'] === 'payment')
-                                            <span class="badge rounded-pill text-bg-info p-1 small">{{ $note['note'] }}</span>
+                                            @php
+                                                $noteRepository = app(\App\Repositories\NoteRepository::class);
+                                                $noteText = $noteRepository->formatNoteForDisplay($note);
+                                                $badgeStyle = $noteRepository->getNoteBadgeStyle($note['type']);
+                                            @endphp
+                                            <span class="badge rounded-pill"
+                                                  style="{{ $badgeStyle }} position: relative; padding: 4px 20px 4px 8px; margin: 2px; display: inline-block; font-size: 0.75rem;">
+                                                {{ $noteText }}
+                                                <i class="fas fa-times-circle"
+                                                   style="position: absolute; right: 3px; top: 50%; transform: translateY(-50%); cursor: pointer; font-size: 0.65rem; color: #dc3545; opacity: 0.8;"
+                                                   onclick="window.dispatchEvent(new CustomEvent('delete-note-event', { detail: { noteId: '{{ $note['id'] }}' } }))"
+                                                   title="حذف یادداشت"
+                                                   onmouseover="this.style.opacity='1'; this.style.transform='translateY(-50%) scale(1.2)';"
+                                                   onmouseout="this.style.opacity='0.8'; this.style.transform='translateY(-50%) scale(1)';"></i>
+                                            </span>
                                         @endif
                                     @endforeach
                                 </td>
@@ -69,7 +83,21 @@
                                         <div class="mt-1">
                                             @foreach ($data['notes'] as $note)
                                                 @if ($note['type'] === 'payment')
-                                                    <span class="badge rounded-pill text-bg-info p-1 small">{{ $note['note'] }}</span>
+                                                    @php
+                                                        $noteRepository = app(\App\Repositories\NoteRepository::class);
+                                                        $noteText = $noteRepository->formatNoteForDisplay($note);
+                                                        $badgeStyle = $noteRepository->getNoteBadgeStyle($note['type']);
+                                                    @endphp
+                                                    <span class="badge rounded-pill"
+                                                          style="{{ $badgeStyle }} position: relative; padding: 4px 20px 4px 8px; margin: 2px; display: inline-block; font-size: 0.75rem;">
+                                                        {{ $noteText }}
+                                                        <i class="fas fa-times-circle"
+                                                           style="position: absolute; right: 3px; top: 50%; transform: translateY(-50%); cursor: pointer; font-size: 0.65rem; color: #dc3545; opacity: 0.8;"
+                                                           onclick="window.dispatchEvent(new CustomEvent('delete-note-event', { detail: { noteId: '{{ $note['id'] }}' } }))"
+                                                           title="حذف یادداشت"
+                                                           onmouseover="this.style.opacity='1'; this.style.transform='translateY(-50%) scale(1.2)';"
+                                                           onmouseout="this.style.opacity='0.8'; this.style.transform='translateY(-50%) scale(1)';"></i>
+                                                    </span>
                                                 @endif
                                             @endforeach
                                         </div>

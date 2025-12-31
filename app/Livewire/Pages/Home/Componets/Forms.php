@@ -5,6 +5,7 @@ namespace App\Livewire\Pages\Home\Componets;
 use App\Models\Resident;
 use App\Services\Report\AllReportService;
 use Livewire\Component;
+use Livewire\Attributes\On;
 
 class Forms extends Component
 {

@@ -1,4 +1,4 @@
-<div class="wrapper">
+<div class="wrapper" wire:id="{{ $this->getId() }}">
 
     <div class="content">
         <div class="container-fluid px-4 mt-4">
@@ -67,6 +67,37 @@
                 });
             } else {
                 console.error('cuteToast function is not available on window object.');
+            }
+        });
+        
+        // Dispatch delete-note event to Home component only
+        let homeComponentId = null;
+        
+        document.addEventListener('livewire:initialized', () => {
+            // Get Home component ID
+            const wrapper = document.querySelector('.wrapper[wire\\:id]');
+            if (wrapper) {
+                homeComponentId = wrapper.getAttribute('wire:id');
+            }
+        });
+        
+        window.addEventListener('delete-note-event', (event) => {
+            const noteId = event.detail.noteId;
+            if (homeComponentId) {
+                const homeComponent = Livewire.find(homeComponentId);
+                if (homeComponent) {
+                    homeComponent.call('handleDeleteNote', noteId);
+                }
+            } else {
+                // Fallback: try to find component
+                const wrapper = document.querySelector('.wrapper[wire\\:id]');
+                if (wrapper) {
+                    const id = wrapper.getAttribute('wire:id');
+                    const component = Livewire.find(id);
+                    if (component) {
+                        component.call('handleDeleteNote', noteId);
+                    }
+                }
             }
         });
     </script>

@@ -42,7 +42,27 @@
                                 </td>
                                 <td>
                                     @foreach ($data['notes'] as $note)
-                                        <span class="badge rounded-pill text-bg-info p-2">{{ $note['note'] }}</span>
+                                        @php
+                                            $noteRepository = app(\App\Repositories\NoteRepository::class);
+                                            $noteText = $note['note'];
+                                            // اگر نوع end_date است، فقط ماه و روز را نمایش بده
+                                            if ($note['type'] === 'end_date' && preg_match('/(\d{4})\/(\d{1,2})\/(\d{1,2})/', $noteText, $matches)) {
+                                                $noteText = $matches[2] . '/' . $matches[3];
+                                            } else {
+                                                $noteText = $noteRepository->formatNoteForDisplay($note);
+                                            }
+                                            $badgeStyle = $noteRepository->getNoteBadgeStyle($note['type']);
+                                        @endphp
+                                        <span class="badge rounded-pill"
+                                              style="{{ $badgeStyle }} position: relative; padding: 6px 22px 6px 10px; margin: 2px; display: inline-block; font-size: 0.85rem;">
+                                            {{ $noteText }}
+                                            <i class="fas fa-times-circle"
+                                               style="position: absolute; right: 4px; top: 50%; transform: translateY(-50%); cursor: pointer; font-size: 0.7rem; color: #dc3545; opacity: 0.8;"
+                                               onclick="window.dispatchEvent(new CustomEvent('delete-note-event', { detail: { noteId: '{{ $note['id'] }}' } }))"
+                                               title="حذف یادداشت"
+                                               onmouseover="this.style.opacity='1'; this.style.transform='translateY(-50%) scale(1.2)';"
+                                               onmouseout="this.style.opacity='0.8'; this.style.transform='translateY(-50%) scale(1)';"></i>
+                                        </span>
                                     @endforeach
                                 </td>
                                 <td>

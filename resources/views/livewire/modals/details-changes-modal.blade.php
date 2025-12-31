@@ -359,7 +359,8 @@
 
 
                                 <select class="form-control mt-2 @error('selectedNoteType') is-invalid @enderror"
-                                        wire:model="selectedNoteType">
+                                        wire:model.live="selectedNoteType"
+                                        wire:change="onNoteTypeChanged">
                                     <option value="">تایپ توضیح رو مشخص کنید</option>
                                     @foreach($this->noteTypes as $key => $noteType)
                                         <option value="{{ $key }}">{{ $noteType }}</option>
@@ -369,13 +370,29 @@
                                 <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
 
-                                <label class="form-label">یادداشت جدید:</label>
-                                <input wire:model="newNote"
-                                       class="form-control @error('selectedNoteType') is-invalid @enderror" rows="3"
-                                       placeholder="یادداشت خود را اینجا بنویسید..."></input>
-                                @error('newNote')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
+                                <div class="row mt-3">
+                                    @if($selectedNoteType === 'end_date')
+                                        <div class="col-md-6 mb-3 mb-md-0">
+                                            <label class="form-label">انتخاب تاریخ سررسید:</label>
+                                            <input type="text" 
+                                                   id="expiry_date_picker" 
+                                                   class="form-control" 
+                                                   placeholder="روی این فیلد کلیک کنید تا تاریخ را انتخاب کنید"
+                                                   style="cursor: pointer; background-color: #fff;">
+                                            <small class="text-muted">تاریخ انتخاب شده به صورت خودکار در فیلد یادداشت قرار می‌گیرد</small>
+                                        </div>
+                                    @endif
+                                    
+                                    <div class="{{ $selectedNoteType === 'end_date' ? 'col-md-6' : 'col-md-12' }}">
+                                        <label class="form-label">یادداشت جدید:</label>
+                                        <input wire:model="newNote"
+                                               class="form-control @error('selectedNoteType') is-invalid @enderror" 
+                                               placeholder="یادداشت خود را اینجا بنویسید..."></input>
+                                        @error('newNote')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                </div>
 
                                 <button type="button" wire:click="addNote"
                                         class="btn btn-outline-primary mt-3 ">
@@ -389,14 +406,25 @@
                                 <label class="form-label">یادداشت‌های قبلی:</label>
                                 <div class="notes-container">
                                     @foreach($previousNotes as $noteId => $index)
-                                        <span class="badge bg-info"
-                                              style="position: relative; padding-right: 25px;">
-               {{ $index['note'] }}  ==> [ {{ $index['type'] }} ]
-                <i class="fas fa-times-circle"
-                   style="position: absolute; right: 5px; top: 50%; transform: translateY(-50%); cursor: pointer; font-size: 0.8rem;"
-                   wire:click="removeNote({{ $noteId  }})"
-                   title="حذف یادداشت"></i>
-            </span>
+                                        @php
+                                            $noteRepository = app(\App\Repositories\NoteRepository::class);
+                                            $noteText = $index['note'];
+                                            // اگر نوع end_date است، فقط ماه و روز را نمایش بده
+                                            if ($index['type'] === 'end_date' && preg_match('/(\d{4})\/(\d{1,2})\/(\d{1,2})/', $noteText, $matches)) {
+                                                $noteText = $matches[2] . '/' . $matches[3];
+                                            }
+                                            $badgeStyle = $noteRepository->getNoteBadgeStyle($index['type']);
+                                        @endphp
+                                        <span class="badge rounded-pill"
+                                              style="{{ $badgeStyle }} position: relative; padding: 8px 25px 8px 12px; margin: 4px; display: inline-block;">
+                                            {{ $noteText }}
+                                            <i class="fas fa-times-circle"
+                                               style="position: absolute; right: 5px; top: 50%; transform: translateY(-50%); cursor: pointer; font-size: 0.75rem; opacity: 0.9;"
+                                               wire:click="removeNote({{ $noteId }})"
+                                               title="حذف یادداشت"
+                                               onmouseover="this.style.opacity='1'; this.style.color='#dc3545';"
+                                               onmouseout="this.style.opacity='0.9';"></i>
+                                        </span>
                                     @endforeach
                                 </div>
                             </div>
@@ -489,5 +517,138 @@
         </div>
     @endif
 
+    @script
+    <script>
+        (function() {
+            // Define function in global scope
+            window.initExpiryDatePicker = function() {
+                const input = document.getElementById('expiry_date_picker');
+                if (!input) {
+                    return;
+                }
+
+                // Check if jalaliDatepicker is available
+                if (typeof jalaliDatepicker === 'undefined') {
+                    console.warn('Jalali Datepicker not loaded');
+                    return;
+                }
+
+                // Check if note type is end_date
+                try {
+                    const noteType = $wire.get('selectedNoteType');
+                    if (noteType !== 'end_date') {
+                        return;
+                    }
+                } catch(e) {
+                    console.error('Error getting note type:', e);
+                    return;
+                }
+
+                // Remove existing event listeners by cloning the element
+                const newInput = input.cloneNode(true);
+                input.parentNode.replaceChild(newInput, input);
+
+                // Initialize Jalali Datepicker
+                jalaliDatepicker.startWatch({
+                    date: true,
+                    time: false,
+                    autoShow: true,
+                    autoHide: true,
+                    hideAfterChange: true,
+                    persianDigits: true,
+                    separatorChars: {
+                        date: '/',
+                        between: ' ',
+                        time: ':'
+                    },
+                    selector: '#expiry_date_picker'
+                });
+
+                // Event listener for date change
+                newInput.addEventListener('change', function() {
+                    const selectedDate = this.value;
+                    if (selectedDate) {
+                        $wire.set('newNote', selectedDate);
+                    }
+                });
+
+                // Event listener for input event
+                newInput.addEventListener('input', function() {
+                    const selectedDate = this.value;
+                    if (selectedDate) {
+                        $wire.set('newNote', selectedDate);
+                    }
+                });
+            };
+
+            // Watch for selectedNoteType changes via event
+            $wire.on('note-type-changed', () => {
+                setTimeout(() => {
+                    try {
+                        const noteType = $wire.get('selectedNoteType');
+                        if (noteType === 'end_date') {
+                            window.initExpiryDatePicker();
+                        }
+                    } catch(e) {
+                        console.error('Error in note-type-changed:', e);
+                    }
+                }, 200);
+            });
+
+            // Watch for Livewire updates
+            Livewire.hook('morph.updated', () => {
+                setTimeout(() => {
+                    try {
+                        const noteType = $wire.get('selectedNoteType');
+                        if (noteType === 'end_date') {
+                            window.initExpiryDatePicker();
+                        }
+                    } catch(e) {
+                        console.error('Error in morph.updated:', e);
+                    }
+                }, 200);
+            });
+
+            // Initialize when component is ready
+            document.addEventListener('livewire:initialized', () => {
+                setTimeout(() => {
+                    try {
+                        const noteType = $wire.get('selectedNoteType');
+                        if (noteType === 'end_date') {
+                            window.initExpiryDatePicker();
+                        }
+                    } catch(e) {
+                        console.error('Error in livewire:initialized:', e);
+                    }
+                }, 300);
+            });
+
+            // Also initialize on DOMContentLoaded
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', () => {
+                    setTimeout(() => {
+                        try {
+                            if ($wire && $wire.get('selectedNoteType') === 'end_date') {
+                                window.initExpiryDatePicker();
+                            }
+                        } catch(e) {
+                            console.error('Error in DOMContentLoaded:', e);
+                        }
+                    }, 500);
+                });
+            } else {
+                setTimeout(() => {
+                    try {
+                        if ($wire && $wire.get('selectedNoteType') === 'end_date') {
+                            window.initExpiryDatePicker();
+                        }
+                    } catch(e) {
+                        console.error('Error in immediate init:', e);
+                    }
+                }, 500);
+            }
+        })();
+    </script>
+    @endscript
 
 </div>

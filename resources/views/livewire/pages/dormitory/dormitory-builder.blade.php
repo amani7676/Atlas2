@@ -248,6 +248,52 @@
         </div>
     @endif
 
+    {{-- Password Modal --}}
+    @if($showPasswordModal)
+        <div class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.5);" wire:click.self="closePasswordModal">
+            <div class="modal-dialog modal-dialog-centered" style="max-width: 400px;">
+                <div class="modal-content border-0 shadow-lg" style="border-radius: 20px; overflow: hidden;">
+                    <div class="modal-header text-white" style="background: linear-gradient(135deg, #f5576c 0%, #f093fb 100%); border: none; padding: 20px;">
+                        <h5 class="modal-title fw-bold">
+                            <i class="fas fa-lock me-2"></i>
+                            تایید رمز
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" wire:click="closePasswordModal"></button>
+                    </div>
+                    <div class="modal-body p-4">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-key me-2 text-primary"></i>
+                                رمز <span class="text-danger">*</span>
+                            </label>
+                            <input type="password" 
+                                   class="form-control form-control-lg @error('passwordInput') is-invalid @enderror" 
+                                   wire:model="passwordInput"
+                                   wire:keydown.enter="verifyPassword"
+                                   placeholder="رمز را وارد کنید"
+                                   autofocus
+                                   style="border-radius: 10px;">
+                            @error('passwordInput')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <div class="d-flex gap-2 justify-content-end mt-4">
+                            <button type="button" class="btn btn-secondary btn-lg" wire:click="closePasswordModal" style="border-radius: 10px;">
+                                <i class="fas fa-times me-2"></i>
+                                انصراف
+                            </button>
+                            <button type="button" class="btn btn-primary btn-lg" wire:click="verifyPassword" style="border-radius: 10px; background: linear-gradient(135deg, #f5576c 0%, #f093fb 100%); border: none;">
+                                <i class="fas fa-check me-2"></i>
+                                تایید
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
+
     {{-- Room Modal --}}
     @if($showRoomModal)
         <div class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.5);" wire:click.self="closeRoomModal">

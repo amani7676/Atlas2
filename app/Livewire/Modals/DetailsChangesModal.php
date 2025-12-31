@@ -61,6 +61,15 @@ class DetailsChangesModal extends Component
     public $selectBed = null;
     protected $bedRepository;
 
+    public function onNoteTypeChanged()
+    {
+        // Reset note when type changes
+        if ($this->selectedNoteType !== 'end_date') {
+            $this->newNote = '';
+        }
+        $this->dispatch('note-type-changed');
+    }
+
     public function __construct()
     {
         $this->bedRepository = $this->repository(BedRepository::class);

@@ -50,43 +50,45 @@ class NoteRepository
     {
         $type = $noteArray['type'] ?? 'other';
         $noteText = $noteArray['note'] ?? '';
-        $formats = [
+        
+        // اگر نوع end_date است، فقط ماه و روز را نمایش بده
+        if ($type === 'end_date' && preg_match('/(\d{4})\/(\d{1,2})\/(\d{1,2})/', $noteText, $matches)) {
+            $noteText = $matches[2] . '/' . $matches[3];
+        }
+        
+        return $this->cleanNoteText($noteText);
+    }
 
-            'end_date' => [
-                'icon' => '📅',
-                'prefix' => 'سررسید',
-                'status' => '📌 سررسید'
-            ],
-            'payment' => [
-                'icon' => '💸',
-                'prefix' => 'پرداخت',
-                'status' => '✅ بدهی'
-            ],
-            'exit' => [
-                'icon' => '🚪',
-                'prefix' => 'خروج',
-                'status' => '⚠️ پایان'
-            ],
-            'demand' => [
-                'icon' => '⏳',
-                'prefix' => 'طلب',
-                'status' => '❌ طلب'
-            ],
-            'other' => [
-                'icon' => 'ℹ️',
-                'prefix' => '',
-                'status' => '📝 دیگر'
-            ]
+    /**
+     * دریافت رنگ badge بر اساس نوع نوت
+     */
+    public function getNoteBadgeColor(string $type): string
+    {
+        $colors = [
+            'payment' => 'primary',      // آبی پررنگ
+            'end_date' => 'info',        // آبی روشن
+            'exit' => 'warning',         // زرد/نارنجی
+            'demand' => 'danger',        // قرمز
+            'other' => 'secondary'       // خاکستری
         ];
 
-        $format = $formats[$type] ?? $formats['other'];
+        return $colors[$type] ?? 'secondary';
+    }
 
-        return sprintf(
-            "%s %s ::  %s ",
-            $format['icon'],
-            $format['prefix'],
-            $this->cleanNoteText($noteText),
-        );
+    /**
+     * دریافت رنگ background برای badge (طیف آبی)
+     */
+    public function getNoteBadgeStyle(string $type): string
+    {
+        $styles = [
+            'payment' => 'background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%); color: white;',
+            'end_date' => 'background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%); color: white;',
+            'exit' => 'background: linear-gradient(135deg, #60a5fa 0%, #93c5fd 100%); color: white;',
+            'demand' => 'background: linear-gradient(135deg, #93c5fd 0%, #bfdbfe 100%); color: #1e3a8a;',
+            'other' => 'background: linear-gradient(135deg, #bfdbfe 0%, #dbeafe 100%); color: #1e3a8a;'
+        ];
+
+        return $styles[$type] ?? $styles['other'];
     }
 
     /**

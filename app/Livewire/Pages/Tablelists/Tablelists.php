@@ -232,6 +232,29 @@ class Tablelists extends Component
         $this->loadResidentData();
     }
 
+    public function deleteNote($noteId): void
+    {
+        try {
+            \App\Models\Note::where('id', $noteId)->delete();
+            
+            $this->dispatch('show-toast', [
+                'type' => 'success',
+                'title' => 'موفقیت!',
+                'description' => 'یادداشت با موفقیت حذف شد',
+                'timer' => 3000
+            ]);
+            
+            $this->loadResidentData();
+        } catch (\Exception $e) {
+            $this->dispatch('show-toast', [
+                'type' => 'error',
+                'title' => 'خطا!',
+                'description' => 'خطا در حذف یادداشت: ' . $e->getMessage(),
+                'timer' => 4000
+            ]);
+        }
+    }
+
     public function render()
     {
         return view('livewire.pages.tablelists.tablelists', [

@@ -19,6 +19,13 @@ class DormitoryBuilder extends Component
     public $editingUnitId = null;
     public $showUnitModal = false;
     
+    // Password protection for units with residents
+    public $showPasswordModal = false;
+    public $passwordInput = '';
+    public $pendingAction = null; // 'edit' or 'delete'
+    public $pendingUnitId = null;
+    private const UNIT_PASSWORD = '1';
+    
     // Room form properties
     public $roomName = '';
     public $roomCode = '';
@@ -130,6 +137,14 @@ class DormitoryBuilder extends Component
     {
         $this->resetUnitForm();
         if ($unitId) {
+            // Check if unit has residents
+            if ($this->unitHasResidents($unitId)) {
+                $this->pendingAction = 'edit';
+                $this->pendingUnitId = $unitId;
+                $this->showPasswordModal = true;
+                return;
+            }
+            
             $unit = $this->getUnitRepository()->findById($unitId);
             if ($unit) {
                 $this->editingUnitId = $unitId;
@@ -139,6 +154,77 @@ class DormitoryBuilder extends Component
             }
         }
         $this->showUnitModal = true;
+    }
+    
+    public function unitHasResidents($unitId): bool
+    {
+        $unit = $this->getUnitRepository()->findById($unitId);
+        if (!$unit) {
+            return false;
+        }
+        
+        // Check if unit has any contracts (which means it has residents)
+        return \App\Models\Contract::whereHas('bed.room', function($query) use ($unitId) {
+            $query->where('unit_id', $unitId);
+        })->exists();
+    }
+    
+    public function verifyPassword()
+    {
+        if ($this->passwordInput === self::UNIT_PASSWORD) {
+            $this->showPasswordModal = false;
+            $this->passwordInput = '';
+            
+            if ($this->pendingAction === 'edit') {
+                $this->proceedWithEdit();
+            } elseif ($this->pendingAction === 'delete') {
+                $this->proceedWithDelete();
+            }
+            
+            $this->pendingAction = null;
+            $this->pendingUnitId = null;
+        } else {
+            $this->dispatch('show-toast', [
+                'type' => 'error',
+                'title' => 'خطا!',
+                'description' => 'رمز وارد شده صحیح نیست',
+                'timer' => 3000
+            ]);
+            $this->passwordInput = '';
+        }
+    }
+    
+    public function proceedWithEdit()
+    {
+        if (!$this->pendingUnitId) {
+            return;
+        }
+        
+        $unit = $this->getUnitRepository()->findById($this->pendingUnitId);
+        if ($unit) {
+            $this->editingUnitId = $this->pendingUnitId;
+            $this->unitName = $unit->name;
+            $this->unitCode = $unit->code;
+            $this->unitDesc = $unit->desc ?? '';
+            $this->showUnitModal = true;
+        }
+    }
+    
+    public function proceedWithDelete()
+    {
+        if (!$this->pendingUnitId) {
+            return;
+        }
+        
+        $this->deleteUnit($this->pendingUnitId);
+    }
+    
+    public function closePasswordModal()
+    {
+        $this->showPasswordModal = false;
+        $this->passwordInput = '';
+        $this->pendingAction = null;
+        $this->pendingUnitId = null;
     }
     
     public function saveUnit()
@@ -196,6 +282,14 @@ class DormitoryBuilder extends Component
     
     public function confirmDeleteUnit($unitId)
     {
+        // Check if unit has residents
+        if ($this->unitHasResidents($unitId)) {
+            $this->pendingAction = 'delete';
+            $this->pendingUnitId = $unitId;
+            $this->showPasswordModal = true;
+            return;
+        }
+        
         $unit = $this->getUnitRepository()->findById($unitId);
         if ($unit) {
             $this->dispatch('confirmDelete', ['id' => $unitId, 'type' => 'unit']);

@@ -33,17 +33,17 @@
             {{-- فرم - مدارک - توضیحات --}}
             <div class="row mt-4">
                 {{-- Documents - Interactive با Livewire --}}
-                <div class="col-md-4">
+                <div class="col-12 col-sm-12 col-md-6 col-lg-4 mb-3 mb-md-0">
                     <livewire:pages.home.componets.documetns :allReportService="$allReportService"/>
                 </div>
 
                 {{-- Forms - Interactive با Livewire --}}
-                <div class="col-md-4">
+                <div class="col-12 col-sm-12 col-md-6 col-lg-4 mb-3 mb-md-0">
                     <livewire:pages.home.componets.forms :allReportService="$allReportService"/>
                 </div>
 
                 {{-- Debts - Static با partial --}}
-                <div class="col-md-4">
+                <div class="col-12 col-sm-12 col-md-12 col-lg-4">
                     @include('livewire.pages.home.partials.payments')
                 </div>
             </div>

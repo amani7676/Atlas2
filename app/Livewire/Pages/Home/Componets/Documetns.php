@@ -9,9 +9,16 @@ use Livewire\Component;
 class Documetns extends Component
 {
     protected AllReportService $allReportService;
+    public $isExpanded = false;
+
     public function mount(AllReportService $allReportService)
     {
         $this->allReportService = $allReportService;
+    }
+
+    public function toggle()
+    {
+        $this->isExpanded = !$this->isExpanded;
     }
     // public function getAllReportService(): AllReportService
     // {

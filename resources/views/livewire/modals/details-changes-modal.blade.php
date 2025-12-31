@@ -296,13 +296,6 @@
             margin-top: 0.5rem;
         }
 
-        .notes-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-            margin-top: 0.5rem;
-        }
-
         .badge {
             padding: 0.5rem 1rem;
             border-radius: 20px;

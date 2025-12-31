@@ -1,12 +1,10 @@
 <!-- Bootstrap Bundle with Popper -->
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
-<script src="{{ asset("assets/js/app.js") }}"></script>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-<script src="https://unpkg.com/@majidh1/jalalidatepicker/dist/jalalidatepicker.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js" defer crossorigin="anonymous"></script>
+<script src="{{ asset("assets/js/app.js") }}?v={{ filemtime(public_path('assets/js/app.js')) }}" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11" defer crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js" defer crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" defer crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@majidh1/jalalidatepicker/dist/jalalidatepicker.min.js" defer crossorigin="anonymous"></script>
 
 <script>
 
@@ -16,7 +14,9 @@
     const SCROLL_THRESHOLD = 50;
 
     function updateNavbar() {
-        const navbar = document.querySelector('.modern-navbar');
+        const navbar = document.querySelector('.material-navbar') || document.querySelector('.modern-navbar');
+        if (!navbar) return;
+        
         const currentScrollY = window.scrollY;
 
         // اضافه کردن hysteresis برای جلوگیری از لرزش
@@ -34,6 +34,95 @@
         lastScrollY = currentScrollY;
         ticking = false;
     }
+    
+    // Material Design Ripple Effect
+    document.addEventListener('DOMContentLoaded', function() {
+        const rippleElements = document.querySelectorAll('[data-ripple]');
+        
+        rippleElements.forEach(element => {
+            element.addEventListener('click', function(e) {
+                const ripple = document.createElement('span');
+                const rect = this.getBoundingClientRect();
+                const size = Math.max(rect.width, rect.height);
+                const x = e.clientX - rect.left - size / 2;
+                const y = e.clientY - rect.top - size / 2;
+                
+                ripple.style.width = ripple.style.height = size + 'px';
+                ripple.style.left = x + 'px';
+                ripple.style.top = y + 'px';
+                ripple.classList.add('ripple');
+                
+                this.appendChild(ripple);
+                
+                setTimeout(() => {
+                    ripple.remove();
+                }, 600);
+            });
+        });
+        
+        // Active link detection - فقط برای لینک‌های مستقیم (نه dropdown toggle)
+        const currentPath = window.location.pathname;
+        const directLinks = document.querySelectorAll('.material-link:not(.dropdown-toggle)');
+        
+        directLinks.forEach(link => {
+            const href = link.getAttribute('href');
+            if (!href || href === '#' || href === 'javascript:void(0)') {
+                link.classList.remove('active');
+                return;
+            }
+            
+            try {
+                const hrefUrl = new URL(href, window.location.origin);
+                const hrefPath = hrefUrl.pathname;
+                
+                // برای صفحه اصلی (/)
+                if (hrefPath === '/' || hrefPath === '') {
+                    if (currentPath === '/' || currentPath === '') {
+                        link.classList.add('active');
+                    } else {
+                        link.classList.remove('active');
+                    }
+                } else {
+                    // برای سایر صفحات - فقط اگر مسیر دقیقاً یکسان باشد
+                    if (currentPath === hrefPath) {
+                        link.classList.add('active');
+                    } else {
+                        link.classList.remove('active');
+                    }
+                }
+            } catch (e) {
+                // اگر URL معتبر نبود، از مقایسه ساده استفاده می‌کنیم
+                const homeRoute = '{{ route("home") }}';
+                if (currentPath === '/' || currentPath === '') {
+                    if (href === homeRoute || href === '/' || href.endsWith('/')) {
+                        link.classList.add('active');
+                    } else {
+                        link.classList.remove('active');
+                    }
+                } else {
+                    if (href === currentPath) {
+                        link.classList.add('active');
+                    } else {
+                        link.classList.remove('active');
+                    }
+                }
+            }
+        });
+        
+        // برای dropdown toggle ها - فقط اگر یکی از آیتم‌های dropdown active باشد
+        const dropdownToggles = document.querySelectorAll('.material-link.dropdown-toggle');
+        dropdownToggles.forEach(toggle => {
+            const dropdown = toggle.closest('.material-dropdown');
+            if (dropdown) {
+                const activeItem = dropdown.querySelector('.material-dropdown-item.active');
+                if (activeItem) {
+                    toggle.classList.add('active');
+                } else {
+                    toggle.classList.remove('active');
+                }
+            }
+        });
+    });
 
     window.addEventListener('scroll', function() {
         if (!ticking) {

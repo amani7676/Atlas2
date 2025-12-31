@@ -35,17 +35,42 @@ class AllReportService
      * @param string $sortDirection جهت مرتب‌سازی ('asc' یا 'desc').
      * @return array
      */
+    /**
+     * پاک کردن cache مربوط به residents
+     */
+    public static function clearResidentsCache(): void
+    {
+        // پاک کردن cache با استفاده از tags (اگر cache driver از tags پشتیبانی کند)
+        try {
+            if (method_exists(\Cache::getStore(), 'tags')) {
+                \Cache::tags(['residents'])->flush();
+            } else {
+                // اگر tags پشتیبانی نمی‌شود، تمام cache را پاک می‌کنیم
+                // یا می‌توانیم فقط key های خاص را پاک کنیم
+                \Cache::flush();
+            }
+        } catch (\Exception $e) {
+            // در صورت خطا، تمام cache را پاک می‌کنیم
+            \Cache::flush();
+        }
+    }
+
     public function getAllResidentsWithDetails($sortBy = 'contract.day_since_payment', $sortDirection = 'desc')
     {
-        // تعیین اینکه آیا مرتب‌سازی نزولی است یا صعودی
-        $isDescending = ($sortDirection === 'desc');
+        // Cache key based on sort parameters
+        $cacheKey = 'residents_with_details_' . md5($sortBy . $sortDirection);
+        
+        try {
+            return \Cache::tags(['residents'])->remember($cacheKey, 60, function () use ($sortBy, $sortDirection) {
+                // تعیین اینکه آیا مرتب‌سازی نزولی است یا صعودی
+                $isDescending = ($sortDirection === 'desc');
 
-        return Resident::with([
-            'contract.bed.room.unit', // زنجیره روابط را می‌توان به صورت بهینه‌تر نوشت
-            'notes'
-        ])
-            ->get()
-            ->map(function ($resident) {
+                return Resident::with([
+                    'contract.bed.room.unit', // زنجیره روابط را می‌توان به صورت بهینه‌تر نوشت
+                    'notes'
+                ])
+                    ->get()
+                    ->map(function ($resident) use ($isDescending) {
                 $contract = $resident->contract;
 
                 return [
@@ -111,6 +136,79 @@ class AllReportService
             }, SORT_REGULAR, $isDescending)
             ->values()
             ->all();
+            });
+        } catch (\Exception $e) {
+            // اگر cache tags پشتیبانی نمی‌شود، بدون tags استفاده می‌کنیم
+            return \Cache::remember($cacheKey, 60, function () use ($sortBy, $sortDirection) {
+                $isDescending = ($sortDirection === 'desc');
+                return Resident::with([
+                    'contract.bed.room.unit',
+                    'notes'
+                ])
+                    ->get()
+                    ->map(function ($resident) {
+                        $contract = $resident->contract;
+                        return [
+                            'resident' => [
+                                'id' => $resident->id,
+                                'full_name' => $resident->full_name,
+                                'phone' => $resident->formatted_phone,
+                                'age' => $resident->age,
+                                'job' => $resident->job,
+                                'referral_source' => $resident->referral_source,
+                                'document' => $resident->document,
+                                'form' => $resident->form,
+                                'rent' => $resident->rent,
+                                'trust' => $resident->trust,
+                            ],
+                            'contract' => $contract ? [
+                                'id' => $contract->id,
+                                'payment_date' => $contract->payment_date_jalali,
+                                'day_since_payment' => $this->getDaysSincePayment($contract->payment_date),
+                                'start_date' => $contract->start_date_jalali,
+                                'end_date' => $contract->end_date_jalali,
+                                'state' => $contract->state,
+                            ] : null,
+                            'bed' => $contract?->bed ? [
+                                'id' => $contract->bed->id,
+                                'name' => $contract->bed->name,
+                                'state_ratio_resident' => $contract->bed->state_ratio_resident,
+                                'state' => $contract->bed->state,
+                                'desc' => $contract->bed->desc,
+                            ] : null,
+                            'room' => $contract?->bed?->room ? [
+                                'id' => $contract->bed->room->id,
+                                'name' => $contract->bed->room->name,
+                                'bed_count' => $contract->bed->room->bed_count,
+                                'desc' => $contract->bed->room->desc,
+                            ] : null,
+                            'unit' => $contract?->bed?->room?->unit ? [
+                                'id' => $contract->bed->room->unit->id,
+                                'name' => $contract->bed->room->unit->name,
+                                'code' => $contract->bed->room->unit->code,
+                                'desc' => $contract->bed->room->unit->desc,
+                            ] : null,
+                            'notes' => $resident->notes->map(function ($note) {
+                                return [
+                                    'id' => $note->id,
+                                    'type' => $note->type,
+                                    'note' => $note->note,
+                                    'created_at' => $note->created_at,
+                                ];
+                            }),
+                        ];
+                    })
+                    ->sortBy(function ($item) use ($sortBy, $isDescending) {
+                        $value = data_get($item, $sortBy);
+                        if ($value === null) {
+                            return $isDescending ? -INF : INF;
+                        }
+                        return $value;
+                    }, SORT_REGULAR, $isDescending)
+                    ->values()
+                    ->all();
+            });
+        }
     }
     /**
      * دریافت تمام ساکنان با جزئیات کامل (نسخه ساده‌تر)

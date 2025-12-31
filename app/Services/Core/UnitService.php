@@ -59,9 +59,8 @@ class UnitService
                             $resident = $contract->resident;
                             
                             if ($resident) {
-                                // دریافت تمام notes این resident
-                                $residentNotes = Note::where('resident_id', $resident->id)
-                                    ->get();
+                                // استفاده از notes که قبلاً eager load شده
+                                $residentNotes = $resident->notes ?? collect();
                                 
                                 // دریافت bed مربوط به این contract
                                 $contractBed = $contract->bed;

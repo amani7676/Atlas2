@@ -45,6 +45,9 @@ class Documetns extends Component
         $resident->document = true;
         $resident->save();
 
+        // پاک کردن cache
+        \App\Services\Report\AllReportService::clearResidentsCache();
+
         // !!! تغییر 'message' به 'description' برای هماهنگی با cute-alert
          $this->dispatch('show-toast', [ // !!! تغییر به 'show-toast'
             'type' => 'success',

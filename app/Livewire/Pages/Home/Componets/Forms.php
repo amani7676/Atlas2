@@ -44,6 +44,9 @@ class Forms extends Component
         $resident->form = true;
         $resident->save();
 
+        // پاک کردن cache
+        \App\Services\Report\AllReportService::clearResidentsCache();
+
         // !!! تغییر 'message' به 'description' برای هماهنگی با cute-alert
         $this->dispatch('show-toast', [ // !!! تغییر به 'show-toast'
             'type' => 'success',

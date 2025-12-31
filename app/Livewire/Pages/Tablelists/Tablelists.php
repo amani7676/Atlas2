@@ -237,6 +237,9 @@ class Tablelists extends Component
         try {
             \App\Models\Note::where('id', $noteId)->delete();
             
+            // پاک کردن cache
+            \App\Services\Report\AllReportService::clearResidentsCache();
+            
             $this->dispatch('show-toast', [
                 'type' => 'success',
                 'title' => 'موفقیت!',

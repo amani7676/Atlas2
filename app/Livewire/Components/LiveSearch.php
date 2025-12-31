@@ -32,12 +32,11 @@ class LiveSearch extends Component
         if (strlen($this->search) >= 2) {
             $this->isLoading = true;
 
-            // شبیه‌سازی تاخیر برای نمایش loading
-            usleep(100000); // 0.1 ثانیه
-
             $this->searchResults = Resident::with(['contract.bed.room.unit'])
-                ->where('full_name', 'like', '%' . $this->search . '%')
-                ->orWhere('phone', 'like', '%' . $this->search . '%')
+                ->where(function($query) {
+                    $query->where('full_name', 'like', '%' . $this->search . '%')
+                          ->orWhere('phone', 'like', '%' . $this->search . '%');
+                })
                 ->limit(10)
                 ->get();
 

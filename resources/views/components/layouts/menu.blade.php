@@ -29,14 +29,6 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link material-link {{ request()->routeIs('Bed_statistic') ? 'active' : '' }}" href="{{ route("Bed_statistic") }}" data-ripple>
-                        <span class="material-link-icon">
-                            <i class="fas fa-chart-bar"></i>
-                        </span>
-                        <span class="material-link-text">آمار تخت‌ها</span>
-                    </a>
-                </li>
-                <li class="nav-item">
                     <a class="nav-link material-link {{ request()->routeIs('reservations') ? 'active' : '' }}" href="{{ route("reservations") }}" data-ripple>
                         <span class="material-link-icon">
                             <i class="fas fa-calendar-plus"></i>
@@ -46,7 +38,7 @@
                 </li>
 
                 <li class="nav-item dropdown material-dropdown">
-                    <a class="nav-link material-link dropdown-toggle {{ request()->routeIs('report.*') ? 'active' : '' }}" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false" data-ripple>
+                    <a class="nav-link material-link dropdown-toggle {{ request()->routeIs('report.*') || request()->routeIs('report.exited_residents') ? 'active' : '' }}" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false" data-ripple>
                         <span class="material-link-icon">
                             <i class="fas fa-file-alt"></i>
                         </span>
@@ -67,7 +59,7 @@
                             </a>
                         </li>
                         <li>
-                            <a class="dropdown-item material-dropdown-item" href="#" data-ripple>
+                            <a class="dropdown-item material-dropdown-item {{ request()->routeIs('report.exited_residents') ? 'active' : '' }}" href="{{ route('report.exited_residents') }}" data-ripple>
                                 <i class="fas fa-sign-out-alt me-2"></i>
                                 اقامتگران خروجی
                             </a>
@@ -76,7 +68,7 @@
                 </li>
 
                 <li class="nav-item dropdown material-dropdown">
-                    <a class="nav-link material-link dropdown-toggle {{ request()->routeIs('dormitory.builder') || request()->routeIs('coolers') || request()->routeIs('keys') ? 'active' : '' }}" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false" data-ripple>
+                    <a class="nav-link material-link dropdown-toggle {{ request()->routeIs('dormitory.builder') || request()->routeIs('coolers') || request()->routeIs('keys') || request()->routeIs('Bed_statistic') ? 'active' : '' }}" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false" data-ripple>
                         <span class="material-link-icon">
                             <i class="fas fa-ellipsis-h"></i>
                         </span>
@@ -100,6 +92,12 @@
                             <a class="dropdown-item material-dropdown-item {{ request()->routeIs('keys') ? 'active' : '' }}" href="{{ route('keys') }}" data-ripple>
                                 <i class="fa-solid fa-key me-2"></i>
                                 کلیدها
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item material-dropdown-item {{ request()->routeIs('Bed_statistic') ? 'active' : '' }}" href="{{ route("Bed_statistic") }}" data-ripple>
+                                <i class="fas fa-chart-bar me-2"></i>
+                                آمار تخت‌ها
                             </a>
                         </li>
                     </ul>

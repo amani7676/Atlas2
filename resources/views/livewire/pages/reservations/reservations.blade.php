@@ -78,40 +78,6 @@
                                 </div>
                             </div>
 
-                            {{-- Bed Details --}}
-                            @if($bedDetails)
-                                <div class="col-12">
-                                    <div class="card bg-light mb-3">
-                                        <div class="card-header">
-                                            <h6 class="mb-0">جزئیات تخت انتخابی</h6>
-                                        </div>
-                                        <div class="card-body">
-                                            <div class="row">
-                                                <div class="col-md-3">
-                                                    <strong>اتاق:</strong> {{ $bedDetails->room->name ?? 'نامشخص' }}
-                                                </div>
-                                                <div class="col-md-3">
-                                                    <strong>شماره تخت:</strong> {{ $bedDetails->name }}
-                                                </div>
-                                                <div class="col-md-3">
-                                                    <strong>وضعیت:</strong>
-                                                    @if($bedDetails->resident)
-                                                        <span class="badge bg-danger">اشغال</span>
-                                                    @else
-                                                        <span class="badge bg-success">خالی</span>
-                                                    @endif
-                                                </div>
-                                                @if($bedDetails->resident)
-                                                    <div class="col-md-3">
-                                                        <strong>ساکن فعلی:</strong> {{ $bedDetails->resident->full_name }}
-                                                    </div>
-                                                @endif
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            @endif
-
                             {{-- Note --}}
                             <div class="col-12">
                                 <div class="mb-3">

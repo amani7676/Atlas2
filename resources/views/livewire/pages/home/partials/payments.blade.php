@@ -21,13 +21,13 @@
                 @php $counter = 1; @endphp
 
                 @foreach ($this->allReportService->getAllResidentsWithDetails() as $data)
-                    @if ($data['notes']->contains(fn($note) => in_array($note['type'], ['payment'])))
+                    @if (isset($data['contract']) && $data['contract'] !== null && $data['notes']->contains(fn($note) => in_array($note['type'], ['payment'])))
                         <tr>
                             <td class="text-info">{{ $counter++ }}</td>
-                            <td>{{ $data['room']['name'] }}</td>
-                            <td>{{ $data['resident']['full_name'] }}</td>
-                            <td>{{ $data['resident']['phone'] }}</td>
-                            <td>{{ $data['contract']['payment_date'] }}</td>
+                            <td>{{ $data['room']['name'] ?? 'N/A' }}</td>
+                            <td>{{ $data['resident']['full_name'] ?? 'N/A' }}</td>
+                            <td>{{ $data['resident']['phone'] ?? 'N/A' }}</td>
+                            <td>{{ $data['contract']['payment_date'] ?? 'N/A' }}</td>
                             <td style="max-width: 250px;">
                                 @foreach ($data['notes'] as $note)
                                     @php

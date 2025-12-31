@@ -15,24 +15,26 @@ class CoolerRoomManager extends Component
     public $units;
     public $connections = [];
 
-    // Form properties
+    // Form properties for Connection
     public $selectedCooler = null;
     public $selectedRoom = null;
     public $connectionType = 'direct';
     public $connectedAt = '';
     public $notes = '';
 
-    //Details Cooler
-    public $selectedNameCoolerModal = null;
-    public $selectedNumberCoolerModal = null;
-    public $descDetailsCoolerModal = null;
-    public $showDetailsCoolerModal = false;
-    public $editingDetailsCoolerModal = false;
-    public $idDetailsCoolerModal = null;
-
+    // Form properties for Cooler
+    public $coolerName = '';
+    public $coolerNumber = '';
+    public $coolerDesc = '';
+    public $coolerStatus = 'active';
+    public $coolerModel = '';
+    public $coolerSerialNumber = '';
+    public $coolerInstallationDate = '';
 
     // Modal states
+    public $showCoolerModal = false;
     public $showConnectionModal = false;
+    public $editingCoolerId = null;
     public $editingConnection = null;
 
     // Search and filter
@@ -41,8 +43,6 @@ class CoolerRoomManager extends Component
     public $filterUnit = '';
     public $filterStatus = '';
 
-
-// listener برای تایید حذف
     protected $listeners = ['delete-confirmed' => 'deleteConnection'];
 
     public function mount()
@@ -61,12 +61,138 @@ class CoolerRoomManager extends Component
     public function loadConnections()
     {
         $this->connections = Cooler::with('rooms')->get();
-//        dd($this->connections);
     }
 
+    // Cooler CRUD Methods
+    public function openCoolerModal($coolerId = null)
+    {
+        $this->resetCoolerForm();
+        if ($coolerId) {
+            $cooler = Cooler::findOrFail($coolerId);
+            $this->editingCoolerId = $coolerId;
+            $this->coolerName = $cooler->name;
+            $this->coolerNumber = $cooler->number;
+            $this->coolerDesc = $cooler->desc;
+            $this->coolerStatus = $cooler->status;
+            $this->coolerModel = $cooler->model;
+            $this->coolerSerialNumber = $cooler->serial_number;
+            $this->coolerInstallationDate = $cooler->installation_date ? $cooler->installation_date->format('Y-m-d') : '';
+        } else {
+            $this->editingCoolerId = null;
+        }
+        $this->showCoolerModal = true;
+    }
+
+    public function saveCooler()
+    {
+        $rules = [
+            'coolerName' => 'required|string|max:255',
+            'coolerNumber' => 'required|numeric',
+            'coolerStatus' => 'required|in:active,inactive,maintenance',
+            'coolerModel' => 'nullable|string|max:255',
+            'coolerSerialNumber' => 'nullable|string|max:255|unique:coolers,serial_number,' . $this->editingCoolerId,
+            'coolerInstallationDate' => 'nullable|date',
+            'coolerDesc' => 'nullable|string',
+        ];
+
+        $this->validate($rules);
+
+        try {
+            $data = [
+                'name' => $this->coolerName,
+                'number' => $this->coolerNumber,
+                'desc' => $this->coolerDesc,
+                'status' => $this->coolerStatus,
+                'model' => $this->coolerModel ?: null,
+                'serial_number' => $this->coolerSerialNumber ?: null,
+                'installation_date' => $this->coolerInstallationDate ?: null,
+            ];
+
+            if ($this->editingCoolerId) {
+                Cooler::findOrFail($this->editingCoolerId)->update($data);
+                $this->dispatch('show-toast', [
+                    'type' => 'info',
+                    'title' => 'به‌روزرسانی شد!',
+                    'description' => 'کولر با موفقیت به‌روزرسانی شد',
+                    'timer' => 3000
+                ]);
+            } else {
+                Cooler::create($data);
+                $this->dispatch('show-toast', [
+                    'type' => 'success',
+                    'title' => 'ایجاد شد!',
+                    'description' => 'کولر جدید با موفقیت ایجاد شد',
+                    'timer' => 3000
+                ]);
+            }
+
+            $this->closeCoolerModal();
+            $this->loadData();
+        } catch (\Exception $e) {
+            $this->dispatch('show-toast', [
+                'type' => 'error',
+                'title' => 'خطا!',
+                'description' => 'خطایی رخ داد: ' . $e->getMessage(),
+                'timer' => 3000
+            ]);
+        }
+    }
+
+    public function closeCoolerModal()
+    {
+        $this->showCoolerModal = false;
+        $this->resetCoolerForm();
+    }
+
+    public function resetCoolerForm()
+    {
+        $this->editingCoolerId = null;
+        $this->coolerName = '';
+        $this->coolerNumber = '';
+        $this->coolerDesc = '';
+        $this->coolerStatus = 'active';
+        $this->coolerModel = '';
+        $this->coolerSerialNumber = '';
+        $this->coolerInstallationDate = '';
+    }
+
+    public function confirmDeleteCooler($coolerId)
+    {
+        $cooler = Cooler::findOrFail($coolerId);
+        $coolerName = $cooler->name;
+        
+        $this->dispatch('confirm-delete-cooler', coolerId: $coolerId, coolerName: $coolerName);
+    }
+
+    public function deleteCooler($coolerId)
+    {
+        try {
+            $cooler = Cooler::findOrFail($coolerId);
+            $cooler->rooms()->detach();
+            $cooler->delete();
+
+            $this->dispatch('show-toast', [
+                'type' => 'error',
+                'title' => 'حذف شد!',
+                'description' => 'کولر با موفقیت حذف شد',
+                'timer' => 3000
+            ]);
+
+            $this->loadData();
+        } catch (\Exception $e) {
+            $this->dispatch('show-toast', [
+                'type' => 'error',
+                'title' => 'خطا!',
+                'description' => 'خطا در حذف کولر: ' . $e->getMessage(),
+                'timer' => 3000
+            ]);
+        }
+    }
+
+    // Connection Methods
     public function openConnectionModal($coolerId = null, $roomId = null)
     {
-        $this->resetForm();
+        $this->resetConnectionForm();
         $this->selectedCooler = $coolerId;
         $this->selectedRoom = $roomId;
         $this->connectedAt = now()->format('Y-m-d');
@@ -75,7 +201,6 @@ class CoolerRoomManager extends Component
 
     public function editConnection($connectionId)
     {
-
         $connection = DB::table('cooler_room')->find($connectionId);
         if ($connection) {
             $this->editingConnection = $connectionId;
@@ -88,12 +213,10 @@ class CoolerRoomManager extends Component
         }
     }
 
-    public function saveConnection(): void
+    public function saveConnection()
     {
-        // اگر selectedRoom آرایه باشد، آن را به آرایه تبدیل کنید
         $roomIds = $this->editingConnection ? [$this->selectedRoom] : (is_array($this->selectedRoom) ? $this->selectedRoom : [$this->selectedRoom]);
 
-        // اعتبارسنجی
         $rules = [
             'selectedCooler' => 'required|exists:coolers,id',
             'notes' => 'nullable|string|max:500',
@@ -111,7 +234,6 @@ class CoolerRoomManager extends Component
 
         try {
             if ($this->editingConnection) {
-                // Update existing connection
                 DB::table('cooler_room')
                     ->where('id', $this->editingConnection)
                     ->update([
@@ -125,14 +247,12 @@ class CoolerRoomManager extends Component
 
                 $this->dispatch('show-toast', [
                     'type' => 'info',
-                    'title' => 'Updated!',
-                    'description' => 'اتصال اپدیت شد',
+                    'title' => 'به‌روزرسانی شد!',
+                    'description' => 'اتصال با موفقیت به‌روزرسانی شد',
                     'timer' => 3000
                 ]);
             } else {
-                // Create new connections for each room
                 foreach ($roomIds as $roomId) {
-                    // بررسی وجود اتصال تکراری
                     $exists = DB::table('cooler_room')
                         ->where('cooler_id', $this->selectedCooler)
                         ->where('room_id', $roomId)
@@ -142,7 +262,7 @@ class CoolerRoomManager extends Component
                         $this->dispatch('show-toast', [
                             'type' => 'error',
                             'title' => 'خطا!',
-                            'description' => "اتصال برای اتاق $roomId قبلاً وجود دارد!",
+                            'description' => "اتصال برای این اتاق قبلاً وجود دارد!",
                             'timer' => 3000
                         ]);
                         continue;
@@ -161,8 +281,8 @@ class CoolerRoomManager extends Component
 
                 $this->dispatch('show-toast', [
                     'type' => 'success',
-                    'title' => 'Created!',
-                    'description' => 'اتصال(های) جدید ایجاد شد!',
+                    'title' => 'ایجاد شد!',
+                    'description' => 'اتصال(های) جدید با موفقیت ایجاد شد',
                     'timer' => 3000
                 ]);
             }
@@ -170,40 +290,29 @@ class CoolerRoomManager extends Component
             $this->closeConnectionModal();
             $this->loadData();
         } catch (\Exception $e) {
-            if (str_contains($e->getMessage(), 'Duplicate entry')) {
-                $this->dispatch('show-toast', [
-                    'type' => 'error',
-                    'title' => 'خطا!',
-                    'description' => 'اتصال تکراری است!',
-                    'timer' => 3000
-                ]);
-            } else {
-                $this->dispatch('show-toast', [
-                    'type' => 'error',
-                    'title' => 'خطا!',
-                    'description' => 'خطایی رخ داد: ' . $e->getMessage(),
-                    'timer' => 3000
-                ]);
-            }
+            $this->dispatch('show-toast', [
+                'type' => 'error',
+                'title' => 'خطا!',
+                'description' => 'خطایی رخ داد: ' . $e->getMessage(),
+                'timer' => 3000
+            ]);
         }
     }
 
     public function confirmDelete($connectionId)
     {
-
         $this->dispatch('confirmDelete', ['connectionId' => $connectionId]);
-
     }
 
     public function deleteConnection($connectionId)
     {
         DB::table('cooler_room')->where('id', $connectionId)->delete();
 
-        $this->dispatch('show-toast', [ // !!! تغییر به 'show-toast'
+        $this->dispatch('show-toast', [
             'type' => 'error',
-            'title' => 'Deleted!',
-            'description' => "حذف شد !",
-            'timer' => 3000 // Toast پس از 3 ثانیه ناپدید می‌شود
+            'title' => 'حذف شد!',
+            'description' => 'اتصال با موفقیت حذف شد',
+            'timer' => 3000
         ]);
         $this->loadData();
     }
@@ -211,10 +320,10 @@ class CoolerRoomManager extends Component
     public function closeConnectionModal()
     {
         $this->showConnectionModal = false;
-        $this->resetForm();
+        $this->resetConnectionForm();
     }
 
-    public function resetForm()
+    public function resetConnectionForm()
     {
         $this->selectedCooler = null;
         $this->selectedRoom = null;
@@ -222,12 +331,6 @@ class CoolerRoomManager extends Component
         $this->connectedAt = '';
         $this->notes = '';
         $this->editingConnection = null;
-
-        //Details Cooler
-        $this->selectedNameCoolerModal = null;
-        $this->selectedNumberCoolerModal = null;
-        $this->descDetailsCoolerModal = null;
-        $this->idDetailsCoolerModal = null;
     }
 
     public function getFilteredCoolersProperty()
@@ -235,7 +338,8 @@ class CoolerRoomManager extends Component
         return $this->coolers->when($this->searchCooler, function ($query) {
             return $query->filter(function ($cooler) {
                 return str_contains(strtolower($cooler->name), strtolower($this->searchCooler)) ||
-                    str_contains($cooler->number ?? '', $this->searchCooler);
+                    str_contains($cooler->number ?? '', $this->searchCooler) ||
+                    str_contains(strtolower($cooler->model ?? ''), strtolower($this->searchCooler));
             });
         })->when($this->filterStatus, function ($query) {
             return $query->where('status', $this->filterStatus);
@@ -254,145 +358,9 @@ class CoolerRoomManager extends Component
         });
     }
 
-
-    /** here add and edit coolers */
-
-
-    public function openDetailsCoolerModal($coolerId = null)
-    {
-        $this->resetForm();
-        if ($coolerId) {
-            $cooler = Cooler::find($coolerId);
-            $this->selectedNameCoolerModal = $cooler->name;
-            $this->selectedNumberCoolerModal = $cooler->number;
-            $this->descDetailsCoolerModal = $cooler->desc;
-            $this->idDetailsCoolerModal = $cooler->id;
-
-            $this->editingDetailsCoolerModal = true;
-            $this->showDetailsCoolerModal = true;
-        } else {
-            $this->editingDetailsCoolerModal = false;
-            $this->showDetailsCoolerModal = true;
-        }
-
-    }
-
-    public function saveDetailsCoolerModal($coolerId = null): void
-    {
-        $this->validate([
-            'selectedNameCoolerModal' => 'required',
-            'selectedNumberCoolerModal' => 'required',
-        ]);
-
-        if (isset($coolerId) && !is_null($coolerId)) {
-            // حالت ویرایش
-            $cooler = Cooler::findOrFail($coolerId);
-
-            $cooler->update([
-                'name' => $this->selectedNameCoolerModal,
-                'number' => $this->selectedNumberCoolerModal,
-                'desc' => $this->descDetailsCoolerModal,
-            ]);
-
-            $this->dispatch('show-toast', [ // !!! تغییر به 'show-toast'
-                'type' => 'info',
-                'title' => 'Updated!',
-                'description' => $this->selectedNameCoolerModal . ' آپدیت شد ',
-                'timer' => 3000 // Toast پس از 3 ثانیه ناپدید می‌شود
-            ]);
-
-        } else {
-
-            // حالت اضافه کردن
-            $cooler = Cooler::create([
-                'name' => $this->selectedNameCoolerModal,
-                'number' => $this->selectedNumberCoolerModal,
-                'desc' => $this->descDetailsCoolerModal,
-                'status' => 'active', // وضعیت پیش‌فرض
-            ]);
-
-            // پیام موفقیت
-            $this->dispatch('show-toast', [ // !!! تغییر به 'show-toast'
-                'type' => 'success',
-                'title' => 'Created!',
-                'description' => $this->selectedNameCoolerModal . ' درست شد ',
-                'timer' => 3000 // Toast پس از 3 ثانیه ناپدید می‌شود
-            ]);
-
-        }
-
-        // پاک کردن فیلدها و بستن مودال
-        $this->resetForm();
-        $this->showDetailsCoolerModal = false;
-        $this->loadData();
-//
-    }
-
-    public function editDetailsCoolerModal($coolerId = null)
-    {
-        dd($coolerId);
-    }
-
-    public function closeDetailsCoolerModal()
-    {
-        $this->showDetailsCoolerModal = false;
-        $this->resetForm();
-    }
-
-    public function confirmDeleteCooler($coolerId): void
-    {
-        $cooler = Cooler::find($coolerId);
-        $coolerName = $cooler->name;
-
-        $this->js("
-        cuteAlert({
-            type: 'warning',
-            title: 'حذف کولر',
-            description: 'آیا از حذف کولر \\'$coolerName\\' مطمئن هستید؟ این عمل قابل بازگشت نیست.',
-            primaryButtonText: 'بله، حذف کن',
-            secondaryButtonText: 'انصراف'
-        }).then((result) => {
-            if (result === 'primaryButtonClicked') {
-                \$wire.deleteCooler($coolerId);
-            }
-        });
-    ");
-    }
-
-    public function deleteCooler($coolerId): void
-    {
-        try {
-            $cooler = Cooler::findOrFail($coolerId);
-            $coolerName = $cooler->name;
-
-            $cooler->rooms()->detach();
-            $cooler->delete();
-
-            $this->js("
-                cuteToast({
-                    type: 'error',
-                    title: 'Deleted!',
-                    description: 'حذف کولر ',
-                    timer: 5000
-                })
-            ");
-
-            $this->loadData();
-        } catch (\Exception $e) {
-            $this->js("
-                cuteToast({
-                    type: 'error',
-                    title: 'Deleted!',
-                    description: 'عملیات حذف با موفقیت صورت نگرفت',
-                    timer: 5000
-                })
-            ");
-        }
-    }
-
     public function render()
     {
         return view('livewire.pages.coolers.cooler-room-manager')
-            ->title("مدیریت کولر ها");
+            ->title("مدیریت کولرها");
     }
 }

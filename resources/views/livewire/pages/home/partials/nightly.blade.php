@@ -25,18 +25,28 @@
                         $counter = 0;
                     @endphp
                     @foreach ($this->allReportService->getAllResidentsWithDetails() as $data)
-                        @if ($data['contract']['state'] == 'nightly')
+                        @if (isset($data['contract']) && $data['contract'] !== null && $data['contract']['state'] == 'nightly')
                             @php $counter++; @endphp
                             <tr>
                                 <td class="text-info">{{ $counter }}</td>
-                                <td>{{ $data['room']['name'] }}</td>
-                                <td>{{ $data['bed']['name'] }} <i class="fa-solid fa-water"></i>
-                                    {{ $data['room']['bed_count'] }}</td>
-                                <td>{{ $data['resident']['full_name'] }}</td>
-                                <td>{{ $data['resident']['phone'] }}</td>
-                                <td>{{ $data['contract']['payment_date'] }}</td>
+                                <td>{{ $data['room']['name'] ?? 'N/A' }}</td>
                                 <td>
-                                    {!! $statusService->getStatusBadge($data['contract']['day_since_payment']) !!}
+                                    <span class="bed-info-container">
+                                        <span class="bed-number-badge">
+                                            <i class="fas fa-bed"></i>
+                                            {{ $data['bed']['name'] ?? 'N/A' }}
+                                        </span>
+                                        <span class="bed-total-badge">
+                                            <i class="fas fa-door-open"></i>
+                                            {{ $data['room']['bed_count'] ?? 'N/A' }}
+                                        </span>
+                                    </span>
+                                </td>
+                                <td>{{ $data['resident']['full_name'] ?? 'N/A' }}</td>
+                                <td>{{ $data['resident']['phone'] ?? 'N/A' }}</td>
+                                <td>{{ $data['contract']['payment_date'] ?? 'N/A' }}</td>
+                                <td>
+                                    {!! $statusService->getStatusBadge($data['contract']['day_since_payment'] ?? 0) !!}
                                 </td>
                                 <td>
                                     @foreach ($data['notes'] as $note)

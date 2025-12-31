@@ -2,7 +2,6 @@
 
 namespace App\Livewire\Pages\Reservations;
 
-use App\Models\Bed;
 use App\Models\Rezerve;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
@@ -16,6 +15,7 @@ class Reservations extends Component
     #[Validate('required|string|max:20')]
     public string $phone = '';
 
+    public $bed_id = null;
 
     #[Validate('nullable|string|max:1000')]
     public string $note = '';
@@ -25,10 +25,7 @@ class Reservations extends Component
 
     // Component State
     public $editingId = null;
-    public $selectedBed = null;
-    public $bedDetails = null;
     public $reserves = [];
-    public $beds = [];
     public $showForm = false;
 
     // Search and Filter
@@ -42,7 +39,6 @@ class Reservations extends Component
 
     public function loadData(): void
     {
-        $this->beds = Bed::with('room')->get();
         $this->loadReserves();
     }
 
@@ -79,19 +75,6 @@ class Reservations extends Component
         $this->loadReserves();
     }
 
-    public function handleBedChange($bedId): void
-    {
-        if ($bedId) {
-            $this->selectedBed = $bedId;
-            $this->bedDetails = Bed::with(['room', 'resident'])->find($bedId);
-            $this->bed_id = $bedId;
-        } else {
-            $this->selectedBed = null;
-            $this->bedDetails = null;
-            $this->bed_id = '';
-        }
-    }
-
     public function showCreateForm(): void
     {
         $this->showForm = true;
@@ -111,11 +94,10 @@ class Reservations extends Component
             'phone',
             'note',
             'priority',
-            'editingId',
-            'selectedBed',
-            'bedDetails'
+            'editingId'
         ]);
         $this->priority = 'medium';
+        $this->bed_id = null;
     }
 
     public function save(): void
@@ -172,11 +154,9 @@ class Reservations extends Component
         $this->editingId = $reserve->id;
         $this->full_name = $reserve->full_name;
         $this->phone = $reserve->phone;
-        $this->bed_id = $reserve->bed_id;
         $this->note = $reserve->note;
         $this->priority = $reserve->priority;
 
-        $this->handleBedChange($reserve->bed_id);
         $this->showForm = true;
     }
 

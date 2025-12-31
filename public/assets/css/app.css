@@ -3298,3 +3298,89 @@ tbody, td, tfoot, th, thead, tr {
         font-size: 0.8rem;
     }
 }
+
+/* ============================================
+   Bed Info Container - طراحی زیبا برای تخت / کل
+   ============================================ */
+
+.bed-info-container {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    flex-wrap: wrap;
+}
+
+.bed-number-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+    padding: 0.25rem 0.5rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #ffffff;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    font-size: 0.875rem;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+    transition: all 0.3s ease;
+    white-space: nowrap;
+}
+
+.bed-number-badge:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.bed-number-badge i {
+    font-size: 0.65rem;
+    opacity: 0.9;
+    margin: 0;
+    padding: 0;
+}
+
+.bed-total-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+    padding: 0.25rem 0.5rem;
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: #ffffff;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    font-size: 0.875rem;
+    box-shadow: 0 2px 8px rgba(245, 87, 108, 0.3);
+    transition: all 0.3s ease;
+    white-space: nowrap;
+}
+
+.bed-total-badge:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(245, 87, 108, 0.4);
+}
+
+.bed-total-badge i {
+    font-size: 0.65rem;
+    opacity: 0.9;
+    margin: 0;
+    padding: 0;
+}
+
+/* استایل برای موبایل */
+@media (max-width: 768px) {
+    .bed-info-container {
+        gap: 0.25rem;
+    }
+    
+    .bed-number-badge,
+    .bed-total-badge {
+        padding: 0.2rem 0.45rem;
+        font-size: 0.8rem;
+        gap: 0.15rem;
+    }
+    
+    .bed-number-badge i,
+    .bed-total-badge i {
+        font-size: 0.6rem;
+        margin: 0;
+        padding: 0;
+    }
+}

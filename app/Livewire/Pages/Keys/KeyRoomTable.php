@@ -107,8 +107,8 @@ class KeyRoomTable extends Component
         $keyData = [
             'name' => $data['keyName'],
             'code' => $data['keyCode'],
-            'desc' => $data['keyDesc'],
-            'note' => $data['keyNote'],
+            'desc' => $data['keyDesc'] ?? null,
+            'note' => $data['keyNote'] ?? null,
         ];
 
         Key::updateOrCreate(['id' => $this->keyId], $keyData);
@@ -214,10 +214,15 @@ class KeyRoomTable extends Component
             ");
     }
 
-    public function removeAssignment()
+    public function removeAssignment($keyId = null, $roomId = null)
     {
-        $key = Key::findOrFail($this->assignmentKeyId);
-        $key->rooms()->detach($this->assignmentRoomId);//?
+        if ($keyId && $roomId) {
+            $key = Key::findOrFail($keyId);
+            $key->rooms()->detach($roomId);
+        } else {
+            $key = Key::findOrFail($this->assignmentKeyId);
+            $key->rooms()->detach($this->assignmentRoomId);
+        }
 
         $this->js("
                 cuteToast({
@@ -237,22 +242,9 @@ class KeyRoomTable extends Component
 
 
     /** delete keys */
-    public function confirmRemoveKey(): void
+    public function confirmRemoveKey($keyId): void
     {
-        $this->showKeyModal = false;
-        $this->js("
-        cuteAlert({
-            type: 'warning',
-            title: 'حذف کلید',
-            description: 'آیا از حذف این کلید مطمئن هستید؟',
-            primaryButtonText: 'بله، حذف کن',
-            secondaryButtonText: 'انصراف'
-        }).then((result) => {
-            if (result === 'primaryButtonClicked') {
-                \$wire.deleteKey($this->keyId);
-            }
-        });
-    ");
+        $this->dispatch('confirm-delete-key', keyId: $keyId);
     }
 
     public function deleteKey($keyId): void

@@ -1,6 +1,8 @@
 <!-- Bootstrap Bundle with Popper -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js" defer crossorigin="anonymous"></script>
 <script src="{{ asset("assets/js/app.js") }}?v={{ filemtime(public_path('assets/js/app.js')) }}" defer></script>
+<!-- Vite compiled assets -->
+@vite(['resources/js/app.js'])
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11" defer crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js" defer crossorigin="anonymous"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" defer crossorigin="anonymous"></script>

@@ -23,19 +23,19 @@
                         $counter = 0;
                     @endphp
                     @forelse($this->beds->getBeds() as $all_beds)
-                        @if ($all_beds->state == 'active' && $all_beds->state_ratio_resident == 'empty')
+                        @if ($all_beds->state == 'active' && $all_beds->state_ratio_resident == 'empty' && $all_beds->room)
                             @php $counter++; @endphp
                             <tr>
                                 <td class="text-info">{{ $counter }}</td>
-                                <td>{{ $all_beds->room->name }}</td>
+                                <td>{{ $all_beds->room->name ?? 'N/A' }}</td>
                                 <td>{{ $all_beds->name }}</td>
-                                <td>{{ $all_beds->room->bed_count }}</td>
+                                <td>{{ $all_beds->room->bed_count ?? 'N/A' }}</td>
                                 <td>
                                     <button class="btn btn-sm btn-primary"
                                             wire:click="openModal({{ json_encode([
                                                     'id' => $all_beds->id,
                                                     'name' => $all_beds->name,
-                                                    'room' => $all_beds->room->name,
+                                                    'room' => $all_beds->room->name ?? 'N/A',
                                                 ]) }})">
                                         <i class="fas fa-plus"></i> افزودن
                                     </button>

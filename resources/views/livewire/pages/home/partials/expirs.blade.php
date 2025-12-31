@@ -51,29 +51,31 @@
                                     {!! $statusService->getStatusBadge($data['contract']['day_since_payment'] ?? 0) !!}
                                 </td>
                                 <td>
-                                    @foreach ($data['notes'] as $note)
-                                        @php
-                                            $noteRepository = app(\App\Repositories\NoteRepository::class);
-                                            $noteText = $note['note'];
-                                            // اگر نوع end_date است، فقط ماه و روز را نمایش بده
-                                            if ($note['type'] === 'end_date' && preg_match('/(\d{4})\/(\d{1,2})\/(\d{1,2})/', $noteText, $matches)) {
-                                                $noteText = $matches[2] . '/' . $matches[3];
-                                            } else {
-                                                $noteText = $noteRepository->formatNoteForDisplay($note);
-                                            }
-                                            $badgeStyle = $noteRepository->getNoteBadgeStyle($note['type']);
-                                        @endphp
-                                        <span class="badge rounded-pill"
-                                              style="{{ $badgeStyle }} position: relative; padding: 6px 22px 6px 10px; margin: 2px; display: inline-block; font-size: 0.85rem;">
-                                            {{ $noteText }}
-                                            <i class="fas fa-times-circle"
-                                               style="position: absolute; right: 4px; top: 50%; transform: translateY(-50%); cursor: pointer; font-size: 0.7rem; color: #dc3545; opacity: 0.8;"
-                                               onclick="window.dispatchEvent(new CustomEvent('delete-note-event', { detail: { noteId: '{{ $note['id'] }}' } }))"
-                                               title="حذف یادداشت"
-                                               onmouseover="this.style.opacity='1'; this.style.transform='translateY(-50%) scale(1.2)';"
-                                               onmouseout="this.style.opacity='0.8'; this.style.transform='translateY(-50%) scale(1)';"></i>
-                                        </span>
-                                    @endforeach
+                                    <div class="notes-container">
+                                        @foreach ($data['notes'] as $note)
+                                            @php
+                                                $noteRepository = app(\App\Repositories\NoteRepository::class);
+                                                $noteText = $note['note'];
+                                                // اگر نوع end_date است، فقط ماه و روز را نمایش بده
+                                                if ($note['type'] === 'end_date' && preg_match('/(\d{4})\/(\d{1,2})\/(\d{1,2})/', $noteText, $matches)) {
+                                                    $noteText = $matches[2] . '/' . $matches[3];
+                                                } else {
+                                                    $noteText = $noteRepository->formatNoteForDisplay($note);
+                                                }
+                                                $badgeStyle = $noteRepository->getNoteBadgeStyle($note['type']);
+                                            @endphp
+                                            <span class="badge rounded-pill note-badge"
+                                                  style="{{ $badgeStyle }} position: relative; padding: 6px 22px 6px 10px; margin: 2px 0; display: block; font-size: 0.85rem; width: fit-content;">
+                                                {{ $noteText }}
+                                                <i class="fas fa-times-circle"
+                                                   style="position: absolute; right: 4px; top: 50%; transform: translateY(-50%); cursor: pointer; font-size: 0.7rem; color: #dc3545; opacity: 0.8;"
+                                                   onclick="window.dispatchEvent(new CustomEvent('delete-note-event', { detail: { noteId: '{{ $note['id'] }}' } }))"
+                                                   title="حذف یادداشت"
+                                                   onmouseover="this.style.opacity='1'; this.style.transform='translateY(-50%) scale(1.2)';"
+                                                   onmouseout="this.style.opacity='0.8'; this.style.transform='translateY(-50%) scale(1)';"></i>
+                                            </span>
+                                        @endforeach
+                                    </div>
                                 </td>
                                 <td>
                                     <a href="{{ route('table_list')}}#{{ $data['room']['name'] }}" target="_blank" class="action-btn">
@@ -90,43 +92,59 @@
     </div>
 
     <style>
-        /* --- استایل‌های اصلی برای اسکرول شرطی --- */
+        /* --- استایل‌های واکنش‌گرا برای اسکرول افقی در همه اندازه‌ها --- */
 
-        /* ۱. رفتار پیش‌فرض برای دسکتاپ: بدون اسکرول افقی */
+        /* کانتینر اصلی - همیشه اسکرول افقی فعال */
         .conditional-scroll-container {
-            overflow-x: visible; /* در دسکتاپ اسکرولی نمایش داده نمی‌شود */
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
             border-radius: 0 0 0.375rem 0.375rem;
+            width: 100%;
         }
 
+        /* جدول - عرض حداقلی برای فعال‌سازی اسکرول */
         .conditional-scroll-table {
-            width: 100%; /* جدول تمام عرض کانتینر را می‌گیرد */
+            min-width: 900px;
+            width: 100%;
             margin-bottom: 0;
         }
 
-        /* ۲. رفتار برای موبایل و تبلت: فعال‌سازی اسکرول افقی */
-        /* این مدیا کوئری برای صفحات کوچکتر از 992px (تبلت و موبایل) اعمال می‌شود */
-        @media (max-width: 991.98px) {
-            .conditional-scroll-container {
-                overflow-x: auto; /* اسکرول افقی فعال می‌شود */
-                -webkit-overflow-scrolling: touch; /* اسکرول نرم در iOS */
-            }
+        /* جلوگیری از شکستن متن */
+        .conditional-scroll-table th,
+        .conditional-scroll-table td {
+            white-space: nowrap;
+            vertical-align: middle;
+        }
 
+        /* موبایل (تا 576px) */
+        @media (max-width: 575.98px) {
             .conditional-scroll-table {
-                /* عرض حداقلی برای جدول تا اسکرول فعال شود */
-                min-width: 900px;
+                min-width: 800px;
+                font-size: 0.8rem;
             }
 
-            /* جلوگیری از شکستن متن برای حفظ ساختار جدول */
             .conditional-scroll-table th,
             .conditional-scroll-table td {
-                white-space: nowrap;
-                vertical-align: middle;
+                padding: 0.4rem 0.6rem;
+            }
+
+            .action-btn {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                width: 32px;
+                height: 32px;
+                border-radius: 0.25rem;
+                background-color: #e9ecef;
+                color: #0d6efd;
+                text-decoration: none;
             }
         }
 
-        /* --- استایل‌های بهبوددهنده برای موبایل --- */
-        @media (max-width: 768px) {
+        /* تبلت کوچک (576px تا 768px) */
+        @media (min-width: 576px) and (max-width: 767.98px) {
             .conditional-scroll-table {
+                min-width: 850px;
                 font-size: 0.85rem;
             }
 
@@ -135,7 +153,6 @@
                 padding: 0.5rem 0.75rem;
             }
 
-            /* استایل دکمه عملیات برای لمس راحت‌تر */
             .action-btn {
                 display: inline-flex;
                 align-items: center;
@@ -146,25 +163,46 @@
                 background-color: #e9ecef;
                 color: #0d6efd;
                 text-decoration: none;
-                transition: background-color 0.2s, color 0.2s;
-            }
-
-            .action-btn:hover {
-                background-color: #0d6efd;
-                color: white !important;
             }
         }
 
-        /* استایل برای دسکتاپ */
-        @media (min-width: 769px) {
-            .action-btn {
-                color: #0d6efd;
-                text-decoration: none;
-                transition: transform 0.2s;
+        /* تبلت (768px تا 992px) */
+        @media (min-width: 768px) and (max-width: 991.98px) {
+            .conditional-scroll-table {
+                min-width: 900px;
             }
-            .action-btn:hover {
-                transform: scale(1.2);
+
+            .conditional-scroll-table th,
+            .conditional-scroll-table td {
+                padding: 0.6rem 0.8rem;
             }
+        }
+
+        /* لپتاپ کوچک (992px تا 1200px) */
+        @media (min-width: 992px) and (max-width: 1199.98px) {
+            .conditional-scroll-table {
+                min-width: 950px;
+            }
+        }
+
+        /* لپتاپ و دسکتاپ (1200px به بالا) */
+        @media (min-width: 1200px) {
+            .conditional-scroll-table {
+                min-width: 1000px;
+            }
+        }
+
+        /* استایل برای نمایش عمودی notes */
+        .notes-container {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .note-badge {
+            display: block !important;
+            width: fit-content;
+            max-width: 100%;
         }
     </style>
 </div>

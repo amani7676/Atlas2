@@ -202,38 +202,43 @@ body {
 }
 
 tr.tr-sarrsed th {
-    background-color: #ffc300;
+    background: linear-gradient(135deg, #3F9AAE 0%, #79C9C5 100%) !important;
+    color: #ffffff !important;
 }
 span.span-sarrsed {
-    color: #f48c06;
+    color: #ffffff;
 }
 
 tr.tr-rezerve th {
-    background-color: #52796f;
+    background: linear-gradient(135deg, #7132CA 0%, #C47BE4 100%) !important;
+    color: #ffffff !important;
 }
 span.span-rezerve {
-    color: #52796f;
+    color: #ffffff;
 }
 
 tr.tr-shabaneh th {
-    background-color: #003049;
+    background: linear-gradient(135deg, #213448 0%, #547792 100%) !important;
+    color: #ffffff !important;
 }
 span.span-shabaneh {
-    color: #003049;
+    color: #ffffff;
 }
 
 tr.tr-exit th {
-    background-color: #fb6f92;
+    background: linear-gradient(135deg, #FD7979 0%, #FDACAC 100%) !important;
+    color: #ffffff !important;
 }
 span.span-exit {
-    color: #fb6f92;
+    color: #ffffff;
 }
 
 tr.tr-empty th {
-    background-color: #90e0ef;
+    background: linear-gradient(135deg, #778873 0%, #A1BC98 100%) !important;
+    color: #ffffff !important;
 }
 span.span-empty {
-    color: #00b4d8;
+    color: #ffffff;
 }
 
 /* menu */
@@ -1650,38 +1655,43 @@ body {
 }
 
 tr.tr-sarrsed th {
-    background-color: #ffc300;
+    background: linear-gradient(135deg, #3F9AAE 0%, #79C9C5 100%) !important;
+    color: #ffffff !important;
 }
 span.span-sarrsed {
-    color: #f48c06;
+    color: #ffffff;
 }
 
 tr.tr-rezerve th {
-    background-color: #52796f;
+    background: linear-gradient(135deg, #7132CA 0%, #C47BE4 100%) !important;
+    color: #ffffff !important;
 }
 span.span-rezerve {
-    color: #52796f;
+    color: #ffffff;
 }
 
 tr.tr-shabaneh th {
-    background-color: #003049;
+    background: linear-gradient(135deg, #213448 0%, #547792 100%) !important;
+    color: #ffffff !important;
 }
 span.span-shabaneh {
-    color: #003049;
+    color: #ffffff;
 }
 
 tr.tr-exit th {
-    background-color: #fb6f92;
+    background: linear-gradient(135deg, #FD7979 0%, #FDACAC 100%) !important;
+    color: #ffffff !important;
 }
 span.span-exit {
-    color: #fb6f92;
+    color: #ffffff;
 }
 
 tr.tr-empty th {
-    background-color: #90e0ef;
+    background: linear-gradient(135deg, #778873 0%, #A1BC98 100%) !important;
+    color: #ffffff !important;
 }
 span.span-empty {
-    color: #00b4d8;
+    color: #ffffff;
 }
 
 /* menu */
@@ -2505,31 +2515,31 @@ tbody, td, tfoot, th, thead, tr {
 
 /* رزروها - رنگ آبی */
 .card-header-rezerve {
-    background: linear-gradient(135deg, #4A90E2 0%, #357ABD 100%) !important;
+    background: linear-gradient(135deg, #7132CA 0%, #C47BE4 100%) !important;
     color: #ffffff !important;
 }
 
 /* سررسیدها - رنگ نارنجی */
 .card-header-sarrsed {
-    background: linear-gradient(135deg, #FF6B6B 0%, #EE5A6F 100%) !important;
+    background: linear-gradient(135deg, #3F9AAE 0%, #79C9C5 100%) !important;
     color: #ffffff !important;
 }
 
 /* شبانه‌ها - رنگ بنفش */
 .card-header-shabaneh {
-    background: linear-gradient(135deg, #9B59B6 0%, #8E44AD 100%) !important;
+    background: linear-gradient(135deg, #213448 0%, #547792 100%) !important;
     color: #ffffff !important;
 }
 
 /* خروجی‌ها - رنگ قرمز */
 .card-header-exit {
-    background: linear-gradient(135deg, #E74C3C 0%, #C0392B 100%) !important;
+    background: linear-gradient(135deg, #FD7979 0%, #FDACAC 100%) !important;
     color: #ffffff !important;
 }
 
 /* تخت‌های خالی - رنگ سبز */
 .card-header-empty {
-    background: linear-gradient(135deg, #2ECC71 0%, #27AE60 100%) !important;
+    background: linear-gradient(135deg, #778873 0%, #A1BC98 100%) !important;
     color: #ffffff !important;
 }
 
@@ -2562,66 +2572,66 @@ tbody, td, tfoot, th, thead, tr {
 
 /* واحد 1 - رنگ سبز */
 #header_vahed_1 {
-    background: linear-gradient(135deg, #2ECC71 0%, #27AE60 100%) !important;
+    background: linear-gradient(135deg, #B33791 0%, #FEC5F6 100%) !important;
 }
 
 #otagh-vahed1 {
-    background: linear-gradient(135deg, #2ECC71 0%, #27AE60 100%) !important;
+    background: linear-gradient(135deg, #B33791 0%, #FEC5F6 100%) !important;
     color: #ffffff !important;
 }
 
 #tableforvahed1 .modern-table thead th,
 #tableforvahed1 .table thead th,
 #tableforvahed1 table thead th {
-    background: linear-gradient(135deg, #2ECC71 0%, #27AE60 100%) !important;
+    background: linear-gradient(135deg, #B33791 0%, #FEC5F6 100%) !important;
 }
 
 /* واحد 2 - رنگ آبی */
 #header_vahed_2 {
-    background: linear-gradient(135deg, #3498DB 0%, #2980B9 100%) !important;
+    background: linear-gradient(135deg, #4C763B 0%, #B0CE88 100%) !important;
 }
 
 #otagh-vahed2 {
-    background: linear-gradient(135deg, #3498DB 0%, #2980B9 100%) !important;
+    background: linear-gradient(135deg, #4C763B 0%, #B0CE88 100%) !important;
     color: #ffffff !important;
 }
 
 #tableforvahed2 .modern-table thead th,
 #tableforvahed2 .table thead th,
 #tableforvahed2 table thead th {
-    background: linear-gradient(135deg, #3498DB 0%, #2980B9 100%) !important;
+    background: linear-gradient(135deg, #4C763B 0%, #B0CE88 100%) !important;
 }
 
 /* واحد 3 - رنگ بنفش */
 #header_vahed_3 {
-    background: linear-gradient(135deg, #9B59B6 0%, #8E44AD 100%) !important;
+    background: linear-gradient(135deg, #696FC7 0%, #A7AAE1 100%) !important;
 }
 
 #otagh-vahed3 {
-    background: linear-gradient(135deg, #9B59B6 0%, #8E44AD 100%) !important;
+    background: linear-gradient(135deg, #696FC7 0%, #A7AAE1 100%) !important;
     color: #ffffff !important;
 }
 
 #tableforvahed3 .modern-table thead th,
 #tableforvahed3 .table thead th,
 #tableforvahed3 table thead th {
-    background: linear-gradient(135deg, #9B59B6 0%, #8E44AD 100%) !important;
+    background: linear-gradient(135deg, #696FC7 0%, #A7AAE1 100%) !important;
 }
 
 /* واحد 4 - رنگ نارنجی */
 #header_vahed_4 {
-    background: linear-gradient(135deg, #E67E22 0%, #D35400 100%) !important;
+    background: linear-gradient(135deg, #234C6A 0%, #456882 100%) !important;
 }
 
 #otagh-vahed4 {
-    background: linear-gradient(135deg, #E67E22 0%, #D35400 100%) !important;
+    background: linear-gradient(135deg, #234C6A 0%, #456882 100%) !important;
     color: #ffffff !important;
 }
 
 #tableforvahed4 .modern-table thead th,
 #tableforvahed4 .table thead th,
 #tableforvahed4 table thead th {
-    background: linear-gradient(135deg, #E67E22 0%, #D35400 100%) !important;
+    background: linear-gradient(135deg, #234C6A 0%, #456882 100%) !important;
 }
 
 /* واحد 5 - رنگ فیروزه‌ای */

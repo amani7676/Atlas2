@@ -41,4 +41,5 @@ Route::middleware(['auth.custom'])->group(function () {
     Route::get('/coolers', \App\Livewire\Pages\Coolers\CoolerRoomManager::class)->name('coolers');
     Route::get('/keys', \App\Livewire\Pages\Keys\KeyRoomTable::class)->name('keys');
     Route::get("/report/chart-one", \App\Livewire\Pages\Reports\ChartOne::class)->name('report.chart_one');
+    Route::get('/dormitory-builder', \App\Livewire\Pages\Dormitory\DormitoryBuilder::class)->name('dormitory.builder');
 });

@@ -71,6 +71,21 @@
                         کلیدها
                     </a>
                 </li>
+
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                        <i class="fas fa-ellipsis-h"></i>
+                        سایر
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li>
+                            <a class="dropdown-item" href="{{ route('dormitory.builder') }}">
+                                <i class="fas fa-building"></i>
+                                ساخت خوابگاه
+                            </a>
+                        </li>
+                    </ul>
+                </li>
             </ul>
 
             <!-- بخش جستجو با Livewire -->

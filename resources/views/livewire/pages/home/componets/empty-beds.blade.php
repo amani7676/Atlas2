@@ -3,7 +3,7 @@
 
     <div class="card">
 
-        <div class="card-header d-flex justify-content-between align-items-center">
+        <div class="card-header card-header-empty d-flex justify-content-between align-items-center">
             <span class="span-empty">تخت‌های خالی</span>
         </div>
         <div class="card-body">

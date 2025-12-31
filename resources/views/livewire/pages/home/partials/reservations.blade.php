@@ -1,6 +1,6 @@
 <div>
     <div class="card mb-4">
-        <div class="card-header d-flex justify-content-between align-items-center">
+        <div class="card-header card-header-rezerve d-flex justify-content-between align-items-center">
             <span class='span-rezerve'>رزروها</span>
         </div>
         <div class="card-body p-0">

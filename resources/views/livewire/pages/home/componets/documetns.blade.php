@@ -1,5 +1,5 @@
 <div class="card {{ $isExpanded ? 'h-100' : '' }}">
-    <div class="card-header d-flex justify-content-between align-items-center" style="cursor: pointer;" wire:click="toggle">
+    <div class="card-header card-header-documents d-flex justify-content-between align-items-center" style="cursor: pointer;" wire:click="toggle">
         <span class="fw-bold">مدارک</span>
         <i class="fas {{ $isExpanded ? 'fa-chevron-up' : 'fa-chevron-down' }}"></i>
     </div>

@@ -184,7 +184,7 @@
             box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15), 0 8px 24px rgba(0, 0, 0, 0.1);
             max-height: 400px;
             overflow-y: auto;
-            z-index: 1000;
+            z-index: 1033 !important;
             animation: materialSlideDown 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
 

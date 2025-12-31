@@ -1,5 +1,5 @@
 <div class="card">
-    <div class="card-header d-flex justify-content-between align-items-center">
+    <div class="card-header card-header-payments d-flex justify-content-between align-items-center">
         <span>بدهی‌ها</span>
     </div>
     <div class="card-body">

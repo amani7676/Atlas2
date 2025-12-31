@@ -1,6 +1,6 @@
 <div>
     <div class="card">
-        <div class="card-header d-flex justify-content-between align-items-center">
+        <div class="card-header card-header-shabaneh d-flex justify-content-between align-items-center">
             <span class="span-shabaneh">شبانه‌ها</span>
         </div>
         <div class="card-body p-0">

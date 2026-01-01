@@ -38,9 +38,15 @@
                         @forelse($units as $unit)
                             <div class="card mb-3 border-0 shadow-sm unit-card" 
                                  wire:click="loadRooms({{ $unit->id }})"
-                                 style="cursor: pointer; border-radius: 15px; transition: all 0.3s ease; border-left: 4px solid #667eea;"
-                                 onmouseover="this.style.transform='translateX(-5px)'; this.style.boxShadow='0 8px 20px rgba(102, 126, 234, 0.3)';"
-                                 onmouseout="this.style.transform='translateX(0)'; this.style.boxShadow='0 2px 10px rgba(0,0,0,0.1)';">
+                                 style="cursor: pointer; border-radius: 15px; transition: all 0.3s ease; 
+                                        border-left: 4px solid {{ $unit->color ?? '#667eea' }};
+                                        backdrop-filter: blur(20px) saturate(180%);
+                                        -webkit-backdrop-filter: blur(20px) saturate(180%);
+                                        background: rgba(255, 255, 255, 0.9);
+                                        border: 1px solid rgba(255, 255, 255, 0.3);
+                                        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);"
+                                 onmouseover="this.style.transform='translateX(-5px)'; this.style.boxShadow='0 8px 20px {{ $unit->color ?? '#667eea' }}40';"
+                                 onmouseout="this.style.transform='translateX(0)'; this.style.boxShadow='0 8px 32px 0 rgba(31, 38, 135, 0.1)';">
                                 <div class="card-body p-3">
                                     <div class="d-flex justify-content-between align-items-start">
                                         <div class="flex-grow-1">
@@ -92,8 +98,16 @@
                 @if($selectedUnit)
                     <div class="card border-0 shadow-lg" style="border-radius: 20px; overflow: hidden;">
                         <div class="card-header text-white d-flex justify-content-between align-items-center" 
-                             style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); border: none; padding: 20px;">
-                            <div>
+                             style="background: linear-gradient(135deg, {{ $selectedUnit->color ?? '#667eea' }}cc 0%, {{ $selectedUnit->color ?? '#764ba2' }}cc 100%);
+                                    backdrop-filter: blur(20px) saturate(180%);
+                                    -webkit-backdrop-filter: blur(20px) saturate(180%);
+                                    border: 1px solid rgba(255, 255, 255, 0.3);
+                                    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+                                    padding: 20px;
+                                    position: relative;
+                                    overflow: hidden;">
+                            <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(135deg, {{ $selectedUnit->color ?? '#667eea' }} 0%, {{ $selectedUnit->color ?? '#764ba2' }} 100%); opacity: 0.85; z-index: -1;"></div>
+                            <div style="position: relative; z-index: 1;">
                                 <h5 class="mb-1 fw-bold">
                                     <i class="fas fa-door-open me-2"></i>
                                     اتاق‌های واحد: {{ $selectedUnit->name }}
@@ -110,7 +124,13 @@
                                 @forelse($rooms as $room)
                                     <div class="col-md-6 col-lg-4 mb-3">
                                         <div class="card border-0 shadow-sm h-100 room-card" 
-                                             style="border-radius: 15px; transition: all 0.3s ease; border-top: 4px solid #f5576c;">
+                                             style="border-radius: 15px; transition: all 0.3s ease; 
+                                                    border-top: 4px solid {{ $room->color ?? '#f093fb' }};
+                                                    backdrop-filter: blur(10px) saturate(180%);
+                                                    -webkit-backdrop-filter: blur(10px) saturate(180%);
+                                                    background-color: rgba(255, 255, 255, 0.9);
+                                                    border: 1px solid rgba(255, 255, 255, 0.18);
+                                                    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);">
                                             <div class="card-body p-3">
                                                 <div class="d-flex justify-content-between align-items-start mb-2">
                                                     <h6 class="fw-bold mb-0 text-dark">{{ $room->name }}</h6>
@@ -177,12 +197,20 @@
         <div class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.5);" wire:click.self="closeUnitModal">
             <div class="modal-dialog modal-dialog-centered" style="max-width: 600px;">
                 <div class="modal-content border-0 shadow-lg" style="border-radius: 20px; overflow: hidden;">
-                    <div class="modal-header text-white" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; padding: 20px;">
-                        <h5 class="modal-title fw-bold">
+                    <div class="modal-header text-white" style="background: linear-gradient(135deg, #667eeacc 0%, #764ba2cc 100%);
+                            backdrop-filter: blur(20px) saturate(180%);
+                            -webkit-backdrop-filter: blur(20px) saturate(180%);
+                            border: 1px solid rgba(255, 255, 255, 0.3);
+                            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+                            padding: 20px;
+                            position: relative;
+                            overflow: hidden;">
+                        <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); opacity: 0.85; z-index: -1;"></div>
+                        <h5 class="modal-title fw-bold" style="position: relative; z-index: 1;">
                             <i class="fas fa-building me-2"></i>
                             {{ $editingUnitId ? 'ویرایش واحد' : 'افزودن واحد جدید' }}
                         </h5>
-                        <button type="button" class="btn-close btn-close-white" wire:click="closeUnitModal"></button>
+                        <button type="button" class="btn-close btn-close-white" wire:click="closeUnitModal" style="position: relative; z-index: 1;"></button>
                     </div>
                     <div class="modal-body p-4">
                         <form wire:submit.prevent="saveUnit">
@@ -227,6 +255,52 @@
                                           placeholder="توضیحات اختیاری..."
                                           style="border-radius: 10px;"></textarea>
                                 @error('unitDesc')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">
+                                    <i class="fas fa-palette me-2 text-primary"></i>
+                                    رنگ واحد
+                                </label>
+                                <div class="d-flex gap-2 align-items-center">
+                                    <input type="color" 
+                                           class="form-control form-control-color @error('unitColor') is-invalid @enderror" 
+                                           wire:model.live="unitColor"
+                                           style="width: 80px; height: 50px; border-radius: 10px; cursor: pointer;">
+                                    <input type="text" 
+                                           class="form-control form-control-lg @error('unitColor') is-invalid @enderror" 
+                                           wire:model.live="unitColor"
+                                           placeholder="#667eea"
+                                           pattern="^#[0-9A-Fa-f]{6}$"
+                                           style="border-radius: 10px;">
+                                </div>
+                                <small class="form-text text-muted">کد رنگ hex را وارد کنید (مثال: #667eea) یا از رنگ‌بر انتخاب کنید</small>
+                                @error('unitColor')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">
+                                    <i class="fas fa-door-open me-2 text-primary"></i>
+                                    رنگ اتاق‌های این واحد
+                                </label>
+                                <div class="d-flex gap-2 align-items-center">
+                                    <input type="color" 
+                                           class="form-control form-control-color @error('roomColorForUnit') is-invalid @enderror" 
+                                           wire:model.live="roomColorForUnit"
+                                           style="width: 80px; height: 50px; border-radius: 10px; cursor: pointer;">
+                                    <input type="text" 
+                                           class="form-control form-control-lg @error('roomColorForUnit') is-invalid @enderror" 
+                                           wire:model.live="roomColorForUnit"
+                                           placeholder="#f093fb"
+                                           pattern="^#[0-9A-Fa-f]{6}$"
+                                           style="border-radius: 10px;">
+                                </div>
+                                <small class="form-text text-muted">این رنگ برای همه اتاق‌های این واحد اعمال می‌شود</small>
+                                @error('roomColorForUnit')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
@@ -299,12 +373,20 @@
         <div class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.5);" wire:click.self="closeRoomModal">
             <div class="modal-dialog modal-dialog-centered" style="max-width: 600px;">
                 <div class="modal-content border-0 shadow-lg" style="border-radius: 20px; overflow: hidden;">
-                    <div class="modal-header text-white" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); border: none; padding: 20px;">
-                        <h5 class="modal-title fw-bold">
+                    <div class="modal-header text-white" style="background: linear-gradient(135deg, #f093fbcc 0%, #f5576ccc 100%);
+                            backdrop-filter: blur(20px) saturate(180%);
+                            -webkit-backdrop-filter: blur(20px) saturate(180%);
+                            border: 1px solid rgba(255, 255, 255, 0.3);
+                            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+                            padding: 20px;
+                            position: relative;
+                            overflow: hidden;">
+                        <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); opacity: 0.85; z-index: -1;"></div>
+                        <h5 class="modal-title fw-bold" style="position: relative; z-index: 1;">
                             <i class="fas fa-door-open me-2"></i>
                             {{ $editingRoomId ? 'ویرایش اتاق' : 'افزودن اتاق جدید' }}
                         </h5>
-                        <button type="button" class="btn-close btn-close-white" wire:click="closeRoomModal"></button>
+                        <button type="button" class="btn-close btn-close-white" wire:click="closeRoomModal" style="position: relative; z-index: 1;"></button>
                     </div>
                     <div class="modal-body p-4">
                         <form wire:submit.prevent="saveRoom">
@@ -387,28 +469,86 @@
         </div>
     @endif
 
-    @script
+    @push('scripts')
     <script>
-        // Handle delete confirmation for units
-        Livewire.on('confirmDelete', (data) => {
+        // Helper function to wait for cuteAlert - attach to window for global access
+        window.waitForCuteAlert = function(callback, maxAttempts = 50) {
+            if (typeof window.cuteAlert === 'function') {
+                callback();
+            } else if (maxAttempts > 0) {
+                setTimeout(() => window.waitForCuteAlert(callback, maxAttempts - 1), 100);
+            } else {
+                console.error('cuteAlert function is not available on window object after waiting.');
+            }
+        };
+
+        document.addEventListener('livewire:initialized', () => {
+            // Handle delete confirmation for units
+            Livewire.on('confirmDelete', (data) => {
             const { id, type } = data[0];
             const itemName = type === 'unit' ? 'واحد' : 'اتاق';
             
-            cuteAlert({
-                type: 'warning',
-                title: 'حذف ' + itemName,
-                description: `آیا از حذف این ${itemName} مطمئن هستید؟ این عمل قابل بازگشت نیست.`,
-                primaryButtonText: 'بله، حذف کن',
-                secondaryButtonText: 'انصراف'
-            }).then((result) => {
-                if (result === 'primaryButtonClicked') {
-                    if (type === 'unit') {
-                        Livewire.dispatch('delete-unit-confirmed', { unitId: id });
-                    } else {
-                        Livewire.dispatch('delete-room-confirmed', { roomId: id });
+            window.waitForCuteAlert(() => {
+                window.cuteAlert({
+                    type: 'warning',
+                    title: 'حذف ' + itemName,
+                    description: `آیا از حذف این ${itemName} مطمئن هستید؟ این عمل قابل بازگشت نیست.`,
+                    primaryButtonText: 'بله، حذف کن',
+                    secondaryButtonText: 'انصراف'
+                }).then((result) => {
+                    if (result === 'primaryButtonClicked') {
+                        if (type === 'unit') {
+                            Livewire.dispatch('delete-unit-confirmed', { unitId: id });
+                        } else {
+                            Livewire.dispatch('delete-room-confirmed', { roomId: id });
+                        }
                     }
-                }
+                });
             });
+        });
+
+        // Handle initial delete confirmation (before password)
+        Livewire.on('confirm-delete-unit-initial', (data) => {
+            const unitId = Array.isArray(data) ? data[0].unitId : data.unitId;
+            const unitName = Array.isArray(data) ? data[0].unitName : data.unitName;
+            
+            window.waitForCuteAlert(() => {
+                window.cuteAlert({
+                    type: 'warning',
+                    title: 'حذف واحد',
+                    description: `آیا می‌خواهید واحد "${unitName}" را حذف کنید؟`,
+                    primaryButtonText: 'بله، ادامه',
+                    secondaryButtonText: 'انصراف'
+                }).then((result) => {
+                    if (result === 'primaryButtonClicked') {
+                        // بعد از تایید اولیه، به modal پسورد می‌رویم
+                        Livewire.dispatch('proceed-to-password-after-initial-confirm', { unitId: unitId });
+                    }
+                });
+            });
+        });
+
+        // Handle delete confirmation after password verification
+        Livewire.on('confirm-delete-unit-after-password', (data) => {
+            const unitId = Array.isArray(data) ? data[0].unitId : data.unitId;
+            const unitName = Array.isArray(data) ? data[0].unitName : data.unitName;
+            
+            window.waitForCuteAlert(() => {
+                window.cuteAlert({
+                    type: 'warning',
+                    title: 'تایید نهایی حذف',
+                    description: `آیا از حذف واحد "${unitName}" مطمئن هستید؟ این عمل قابل بازگشت نیست.`,
+                    primaryButtonText: 'بله، حذف کن',
+                    secondaryButtonText: 'انصراف'
+                }).then((result) => {
+                    if (result === 'primaryButtonClicked') {
+                        // Dispatch event برای حذف نهایی
+                        Livewire.dispatch('delete-unit-confirmed', { unitId: unitId });
+                    }
+                });
+            });
+        });
+
         });
 
         // Handle show-toast event
@@ -427,6 +567,6 @@
             }
         });
     </script>
-    @endscript
+    @endpush
 </div>
 

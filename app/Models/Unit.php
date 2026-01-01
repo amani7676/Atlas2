@@ -11,7 +11,8 @@ class Unit extends Model
      protected $fillable = [
         'name',
         'code',
-        'desc'
+        'desc',
+        'color'
     ];
 
     // Relations

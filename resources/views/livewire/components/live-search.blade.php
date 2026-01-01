@@ -48,9 +48,15 @@
                                         {!! $this->highlightSearch($result->phone) !!}
                                     </div>
                                 </div>
-                                <a href="{{ route('table_list') }}#{{$result->contract->bed->room->name}}" class="material-result-action" data-ripple>
-                                    <i class="fa-solid fa-paper-plane"></i>
-                                </a>
+                                @if($result->contract && $result->contract->bed && $result->contract->bed->room)
+                                    <a href="{{ route('table_list') }}#{{$result->contract->bed->room->name}}" class="material-result-action" data-ripple>
+                                        <i class="fa-solid fa-paper-plane"></i>
+                                    </a>
+                                @else
+                                    <span class="material-result-action" style="opacity: 0.5; cursor: not-allowed;" title="تخت تخصیص یافته ندارد">
+                                        <i class="fa-solid fa-paper-plane"></i>
+                                    </span>
+                                @endif
                             </div>
 
                             @if($result->contract && $result->contract->bed)
@@ -72,7 +78,7 @@
                                         </span>
                                         <span class="material-info-chip material-info-chip-date">
                                             <i class="fa-solid fa-calendar-days"></i>
-                                            {{ $result->contract->getPaymentDateJalaliAttribute() }}
+                                            {{ $result->contract->getPaymentDateJalaliAttribute() ?? 'N/A' }}
                                         </span>
                                     @endif
                                 </div>

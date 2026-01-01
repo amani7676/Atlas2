@@ -33,6 +33,104 @@
                             </div>
                         @endif
 
+                        {{-- Unit, Room and Bed Selection (فقط در حالت اضافه کردن و اگر تخت از قبل انتخاب نشده باشد) --}}
+                        @if ($modalMode === 'add' && !$this->selectedBed)
+                            <div class="card mb-4 border-primary">
+                                <div class="card-header bg-primary text-white">
+                                    <h6 class="mb-0"><i class="fas fa-map-marker-alt me-2"></i>انتخاب واحد، اتاق و تخت</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        {{-- Unit Selection --}}
+                                        <div class="col-md-4 mb-3">
+                                            <label for="selectedUnitId" class="form-label">
+                                                واحد <span class="text-danger">*</span>
+                                            </label>
+                                            <select class="form-select @error('selectedUnitId') is-invalid @enderror"
+                                                    id="selectedUnitId"
+                                                    wire:model.live="selectedUnitId">
+                                                <option value="">انتخاب واحد...</option>
+                                                @foreach($units as $unit)
+                                                    <option value="{{ $unit['id'] }}">{{ $unit['name'] }}</option>
+                                                @endforeach
+                                            </select>
+                                            @error('selectedUnitId')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                            @enderror
+                                        </div>
+
+                                        {{-- Room Selection --}}
+                                        <div class="col-md-4 mb-3">
+                                            <label for="selectedRoomId" class="form-label">
+                                                اتاق <span class="text-danger">*</span>
+                                            </label>
+                                            <select class="form-select @error('selectedRoomId') is-invalid @enderror"
+                                                    id="selectedRoomId"
+                                                    wire:model.live="selectedRoomId"
+                                                    @if(!$selectedUnitId) disabled @endif>
+                                                <option value="">انتخاب اتاق...</option>
+                                                @if($selectedUnitId)
+                                                    @foreach($rooms as $room)
+                                                        <option value="{{ $room['id'] }}">{{ $room['name'] }}</option>
+                                                    @endforeach
+                                                @else
+                                                    <option value="" disabled>ابتدا واحد را انتخاب کنید</option>
+                                                @endif
+                                            </select>
+                                            @error('selectedRoomId')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                            @enderror
+                                        </div>
+
+                                        {{-- Bed Selection --}}
+                                        <div class="col-md-4 mb-3">
+                                            <label for="selectedBedId" class="form-label">
+                                                تخت <span class="text-danger">*</span>
+                                            </label>
+                                            <select class="form-select @error('selectedBed.id') is-invalid @enderror"
+                                                    id="selectedBedId"
+                                                    wire:model.live="selectedBed"
+                                                    @if(!$selectedRoomId) disabled @endif>
+                                                <option value="">انتخاب تخت...</option>
+                                                @if($selectedRoomId)
+                                                    @foreach($beds as $bed)
+                                                        <option value="{{ json_encode(['id' => $bed['id'], 'name' => $bed['name']]) }}">
+                                                            تخت {{ $bed['name'] }}
+                                                            @if($bed['state_ratio_resident'] === 'empty')
+                                                                (خالی)
+                                                            @elseif($bed['state_ratio_resident'] === 'full')
+                                                                (پر)
+                                                            @elseif($bed['state_ratio_resident'] === 'rezerve')
+                                                                (رزرو)
+                                                            @endif
+                                                        </option>
+                                                    @endforeach
+                                                @else
+                                                    <option value="" disabled>ابتدا اتاق را انتخاب کنید</option>
+                                                @endif
+                                            </select>
+                                            @error('selectedBed.id')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                            @enderror
+                                            @if($selectedBed && is_array($selectedBed))
+                                                <small class="text-success mt-1 d-block">
+                                                    <i class="fas fa-check-circle me-1"></i>
+                                                    تخت {{ $selectedBed['name'] }} انتخاب شد
+                                                </small>
+                                            @endif
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        @elseif($modalMode === 'add' && $this->selectedBed)
+                            {{-- نمایش اطلاعات تخت انتخاب شده از tablelists --}}
+                            <div class="alert alert-success mb-4">
+                                <i class="fas fa-check-circle me-2"></i>
+                                <strong>تخت:</strong> {{ $this->selectedBed['name'] }} -
+                                <strong>اتاق:</strong> {{ $this->selectedBed['room'] }}
+                            </div>
+                        @endif
+
                         {{-- Personal Information Section --}}
                         <div class="card mb-4">
                             <div class="card-header">

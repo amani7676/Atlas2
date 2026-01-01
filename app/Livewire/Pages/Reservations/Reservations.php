@@ -12,7 +12,7 @@ class Reservations extends Component
     #[Validate('required|string|max:255')]
     public string $full_name = '';
 
-    #[Validate('required|string|max:20')]
+    #[Validate('required|string|min:11|max:13')]
     public string $phone = '';
 
     public $bed_id = null;
@@ -100,8 +100,65 @@ class Reservations extends Component
         $this->bed_id = null;
     }
 
+    public function updatedPhone($value): void
+    {
+        // پاکسازی شماره تلفن (حذف کاراکترهای غیر عددی)
+        $cleanPhone = preg_replace('/\D/', '', $value);
+        
+        // اگر شماره با 09 شروع نشود، اضافه کردن 0
+        if (strlen($cleanPhone) > 0 && !str_starts_with($cleanPhone, '0')) {
+            $cleanPhone = '0' . $cleanPhone;
+        }
+        
+        // محدود کردن به 11 رقم
+        $cleanPhone = substr($cleanPhone, 0, 11);
+        
+        // فرمت کردن شماره تلفن برای نمایش
+        if (strlen($cleanPhone) == 11) {
+            $this->phone = substr($cleanPhone, 0, 4) . '-' . substr($cleanPhone, 4, 3) . '-' . substr($cleanPhone, 7, 4);
+        } else {
+            $this->phone = $cleanPhone;
+        }
+        
+        // اعتبارسنجی
+        $this->validatePhoneNumber();
+    }
+
+    public function validatePhoneNumber(): bool
+    {
+        $cleanPhone = preg_replace('/\D/', '', $this->phone);
+        
+        $this->resetErrorBag('phone');
+        
+        if (strlen($cleanPhone) != 11) {
+            $this->addError('phone', 'شماره تلفن باید دقیقاً 11 رقم باشد (مثال: 09123456789)');
+            return false;
+        }
+        
+        if (!str_starts_with($cleanPhone, '0')) {
+            $this->addError('phone', 'شماره تلفن باید با 0 شروع شود');
+            return false;
+        }
+        
+        if (substr($cleanPhone, 1, 1) != '9') {
+            $this->addError('phone', 'شماره تلفن باید با 09 شروع شود');
+            return false;
+        }
+        
+        return true;
+    }
+
+    private function sanitizePhoneNumberForDatabase($phoneNumber): string
+    {
+        return preg_replace('/\D/', '', $phoneNumber);
+    }
+
     public function save(): void
     {
+        // اعتبارسنجی شماره تلفن
+        if (!$this->validatePhoneNumber()) {
+            return;
+        }
 
         $this->validate();
 
@@ -111,7 +168,7 @@ class Reservations extends Component
                 $reserve = Rezerve::findOrFail($this->editingId);
                 $reserve->update([
                     'full_name' => $this->full_name,
-                    'phone' => $this->phone,
+                    'phone' => $this->sanitizePhoneNumberForDatabase($this->phone),
                     'note' => $this->note,
                     'priority' => $this->priority,
                 ]);
@@ -126,7 +183,7 @@ class Reservations extends Component
                 // Create new reserve
                 Rezerve::create([
                     'full_name' => $this->full_name,
-                    'phone' => $this->phone,
+                    'phone' => $this->sanitizePhoneNumberForDatabase($this->phone),
                     'note' => $this->note,
                     'priority' => $this->priority,
                 ]);
@@ -153,11 +210,23 @@ class Reservations extends Component
 
         $this->editingId = $reserve->id;
         $this->full_name = $reserve->full_name;
-        $this->phone = $reserve->phone;
+        // فرمت کردن شماره تلفن برای نمایش
+        $this->phone = $this->formatPhoneNumberForDisplay($reserve->phone);
         $this->note = $reserve->note;
         $this->priority = $reserve->priority;
 
         $this->showForm = true;
+    }
+
+    private function formatPhoneNumberForDisplay($phoneNumber): string
+    {
+        $cleanPhone = preg_replace('/\D/', '', $phoneNumber);
+        
+        if (strlen($cleanPhone) == 11 && substr($cleanPhone, 0, 1) == '0') {
+            return substr($cleanPhone, 0, 4) . '-' . substr($cleanPhone, 4, 3) . '-' . substr($cleanPhone, 7, 4);
+        }
+        
+        return $phoneNumber;
     }
 
     public function delete($reserveId): void

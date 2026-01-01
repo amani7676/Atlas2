@@ -2,8 +2,10 @@
 
 namespace App\Livewire\Pages\Dormitory;
 
+use App\Models\Bed;
 use App\Repositories\RoomRepository;
 use App\Repositories\UnitRepository;
+use Livewire\Attributes\On;
 use Livewire\Component;
 
 class DormitoryBuilder extends Component
@@ -16,6 +18,8 @@ class DormitoryBuilder extends Component
     public $unitName = '';
     public $unitCode = '';
     public $unitDesc = '';
+    public $unitColor = '#667eea'; // رنگ پیش‌فرض
+    public $roomColorForUnit = '#f093fb'; // رنگ پیش‌فرض برای اتاق‌های این واحد
     public $editingUnitId = null;
     public $showUnitModal = false;
     
@@ -31,6 +35,7 @@ class DormitoryBuilder extends Component
     public $roomCode = '';
     public $bedCount = 1;
     public $roomDesc = '';
+    public $roomColor = '#f093fb'; // رنگ پیش‌فرض
     public $editingRoomId = null;
     public $showRoomModal = false;
     
@@ -58,6 +63,11 @@ class DormitoryBuilder extends Component
             if ($this->selectedUnit && $this->selectedUnit->id == $unitId) {
                 $this->selectedUnit = null;
                 $this->rooms = [];
+            }
+            
+            // بستن modal پسورد در صورت باز بودن
+            if ($this->showPasswordModal) {
+                $this->closePasswordModal();
             }
             
             $this->loadUnits();
@@ -137,22 +147,13 @@ class DormitoryBuilder extends Component
     {
         $this->resetUnitForm();
         if ($unitId) {
-            // Check if unit has residents
-            if ($this->unitHasResidents($unitId)) {
-                $this->pendingAction = 'edit';
-                $this->pendingUnitId = $unitId;
-                $this->showPasswordModal = true;
-                return;
-            }
-            
-            $unit = $this->getUnitRepository()->findById($unitId);
-            if ($unit) {
-                $this->editingUnitId = $unitId;
-                $this->unitName = $unit->name;
-                $this->unitCode = $unit->code;
-                $this->unitDesc = $unit->desc ?? '';
-            }
+            // برای واحدهای موجود (ویرایش)، پسورد لازم است
+            $this->pendingAction = 'edit';
+            $this->pendingUnitId = $unitId;
+            $this->showPasswordModal = true;
+            return;
         }
+        // برای واحدهای جدید، پسورد لازم نیست - مستقیماً modal را باز می‌کنیم
         $this->showUnitModal = true;
     }
     
@@ -200,12 +201,17 @@ class DormitoryBuilder extends Component
             return;
         }
         
-        $unit = $this->getUnitRepository()->findById($this->pendingUnitId);
+        $unit = $this->getUnitRepository()->getWithRooms($this->pendingUnitId);
         if ($unit) {
             $this->editingUnitId = $this->pendingUnitId;
             $this->unitName = $unit->name;
             $this->unitCode = $unit->code;
             $this->unitDesc = $unit->desc ?? '';
+            // لود رنگ واحد - اگر null یا خالی باشد از پیش‌فرض استفاده می‌کنیم
+            $this->unitColor = !empty($unit->color) ? $unit->color : '#667eea';
+            // دریافت رنگ اتاق‌ها از اولین اتاق واحد (اگر وجود داشته باشد)
+            $firstRoom = $unit->rooms->first();
+            $this->roomColorForUnit = !empty($firstRoom->color) ? $firstRoom->color : '#f093fb';
             $this->showUnitModal = true;
         }
     }
@@ -216,7 +222,32 @@ class DormitoryBuilder extends Component
             return;
         }
         
-        $this->deleteUnit($this->pendingUnitId);
+        // نمایش تایید نهایی با cuteAlert
+        $unit = $this->getUnitRepository()->findById($this->pendingUnitId);
+        $unitName = $unit ? $unit->name : 'این واحد';
+        
+        $this->dispatch('confirm-delete-unit-after-password', [
+            'unitId' => $this->pendingUnitId,
+            'unitName' => $unitName
+        ]);
+    }
+    
+    #[On('proceed-to-password-after-initial-confirm')]
+    public function proceedToPasswordAfterInitialConfirm($unitId = null)
+    {
+        // بعد از تایید اولیه، modal پسورد را باز می‌کنیم
+        // Handle both direct parameter and object parameter
+        if (is_array($unitId) && isset($unitId['unitId'])) {
+            $unitId = $unitId['unitId'];
+        }
+        
+        if (!$unitId) {
+            return;
+        }
+        
+        $this->pendingAction = 'delete';
+        $this->pendingUnitId = $unitId;
+        $this->showPasswordModal = true;
     }
     
     public function closePasswordModal()
@@ -229,36 +260,71 @@ class DormitoryBuilder extends Component
     
     public function saveUnit()
     {
+        // Normalize color values (uppercase to lowercase, ensure # prefix)
+        if (!empty($this->unitColor)) {
+            $this->unitColor = strtolower(trim($this->unitColor));
+            if (!str_starts_with($this->unitColor, '#')) {
+                $this->unitColor = '#' . $this->unitColor;
+            }
+        }
+        
+        if (!empty($this->roomColorForUnit)) {
+            $this->roomColorForUnit = strtolower(trim($this->roomColorForUnit));
+            if (!str_starts_with($this->roomColorForUnit, '#')) {
+                $this->roomColorForUnit = '#' . $this->roomColorForUnit;
+            }
+        }
+        
         $this->validate([
             'unitName' => 'required|string|max:255',
             'unitCode' => 'required|numeric|unique:units,code,' . ($this->editingUnitId ?? ''),
             'unitDesc' => 'nullable|string',
+            'unitColor' => 'nullable|string|regex:/^#[0-9a-f]{6}$/i',
+            'roomColorForUnit' => 'nullable|string|regex:/^#[0-9a-f]{6}$/i',
         ], [
             'unitName.required' => 'نام واحد الزامی است',
             'unitCode.required' => 'کد واحد الزامی است',
             'unitCode.unique' => 'این کد واحد قبلاً استفاده شده است',
+            'unitColor.regex' => 'فرمت رنگ نامعتبر است (مثال: #667eea)',
+            'roomColorForUnit.regex' => 'فرمت رنگ اتاق نامعتبر است (مثال: #f093fb)',
         ]);
         
         try {
+            $unit = null;
+            $unitColorValue = !empty($this->unitColor) ? $this->unitColor : '#667eea';
+            $roomColorValue = !empty($this->roomColorForUnit) ? $this->roomColorForUnit : '#f093fb';
+            
             if ($this->editingUnitId) {
-                $this->getUnitRepository()->update($this->editingUnitId, [
+                $unit = $this->getUnitRepository()->update($this->editingUnitId, [
                     'name' => $this->unitName,
                     'code' => $this->unitCode,
                     'desc' => $this->unitDesc,
+                    'color' => $unitColorValue,
                 ]);
+                
+                // به‌روزرسانی رنگ همه اتاق‌های این واحد
+                if ($unit->rooms()->count() > 0) {
+                    $unit->rooms()->update([
+                        'color' => $roomColorValue
+                    ]);
+                }
                 
                 $this->dispatch('show-toast', [
                     'type' => 'info',
                     'title' => 'به‌روزرسانی شد!',
-                    'description' => 'واحد با موفقیت به‌روزرسانی شد',
+                    'description' => 'واحد و اتاق‌هایش با موفقیت به‌روزرسانی شدند',
                     'timer' => 3000
                 ]);
             } else {
-                $this->getUnitRepository()->create([
+                $unit = $this->getUnitRepository()->create([
                     'name' => $this->unitName,
                     'code' => $this->unitCode,
                     'desc' => $this->unitDesc,
+                    'color' => $unitColorValue,
                 ]);
+                
+                // برای واحد جدید، رنگ اتاق‌ها در زمان ایجاد اتاق اعمال می‌شود
+                // (در saveRoom)
                 
                 $this->dispatch('show-toast', [
                     'type' => 'success',
@@ -282,18 +348,14 @@ class DormitoryBuilder extends Component
     
     public function confirmDeleteUnit($unitId)
     {
-        // Check if unit has residents
-        if ($this->unitHasResidents($unitId)) {
-            $this->pendingAction = 'delete';
-            $this->pendingUnitId = $unitId;
-            $this->showPasswordModal = true;
-            return;
-        }
-        
+        // نمایش alert تایید اولیه
         $unit = $this->getUnitRepository()->findById($unitId);
-        if ($unit) {
-            $this->dispatch('confirmDelete', ['id' => $unitId, 'type' => 'unit']);
-        }
+        $unitName = $unit ? $unit->name : 'این واحد';
+        
+        $this->dispatch('confirm-delete-unit-initial', [
+            'unitId' => $unitId,
+            'unitName' => $unitName
+        ]);
     }
     
     public function closeUnitModal()
@@ -307,6 +369,8 @@ class DormitoryBuilder extends Component
         $this->unitName = '';
         $this->unitCode = '';
         $this->unitDesc = '';
+        $this->unitColor = '#667eea';
+        $this->roomColorForUnit = '#f093fb';
         $this->editingUnitId = null;
     }
     
@@ -356,14 +420,53 @@ class DormitoryBuilder extends Component
         
         try {
             if ($this->editingRoomId) {
+                // حالت ویرایش
                 $room = $this->getRoomRepository()->getWithBeds($this->editingRoomId);
                 if ($room) {
+                    $oldBedCount = $room->bed_count;
+                    // استفاده از رنگ واحد برای اتاق (از اولین اتاق واحد)
+                    $roomColor = $this->selectedUnit->rooms()->first()?->color ?? '#f093fb';
+                    
                     $room->update([
                         'name' => $this->roomName,
                         'code' => $this->roomCode ?: null,
                         'bed_count' => $this->bedCount,
                         'desc' => $this->roomDesc,
+                        'color' => $roomColor,
                     ]);
+                    
+                    // اگر تعداد تخت‌ها تغییر کرد
+                    if ($this->bedCount != $oldBedCount) {
+                        $existingBedsCount = $room->beds()->count();
+                        
+                        if ($this->bedCount > $existingBedsCount) {
+                            // تخت‌های اضافی ایجاد کن
+                            $startNumber = $existingBedsCount + 1;
+                            for ($bedNumber = $startNumber; $bedNumber <= $this->bedCount; $bedNumber++) {
+                                Bed::create([
+                                    'room_id' => $room->id,
+                                    'name' => $bedNumber,
+                                    'state' => 'active',
+                                    'state_ratio_resident' => 'empty',
+                                    'desc' => "تخت شماره {$bedNumber} در اتاق {$this->roomName}",
+                                ]);
+                            }
+                        } elseif ($this->bedCount < $existingBedsCount) {
+                            // تخت‌های اضافی را حذف کن (فقط تخت‌های خالی)
+                            $bedsToDelete = $room->beds()
+                                ->where('state_ratio_resident', 'empty')
+                                ->orderBy('name', 'desc')
+                                ->limit($existingBedsCount - $this->bedCount)
+                                ->get();
+                            
+                            foreach ($bedsToDelete as $bed) {
+                                // فقط تخت‌های خالی را حذف کن
+                                if ($bed->state_ratio_resident === 'empty') {
+                                    $bed->delete();
+                                }
+                            }
+                        }
+                    }
                 }
                 
                 $this->dispatch('show-toast', [
@@ -373,18 +476,35 @@ class DormitoryBuilder extends Component
                     'timer' => 3000
                 ]);
             } else {
-                $this->getRoomRepository()->create([
+                // حالت ایجاد جدید
+                // استفاده از رنگ واحد برای اتاق (از اولین اتاق واحد یا رنگ پیش‌فرض)
+                // اگر واحد تازه ایجاد شده و اتاقی ندارد، از roomColorForUnit استفاده می‌کنیم
+                $roomColor = $this->selectedUnit->rooms()->first()?->color ?? '#f093fb';
+                
+                $room = $this->getRoomRepository()->create([
                     'name' => $this->roomName,
                     'code' => $this->roomCode ?: null,
                     'unit_id' => $this->selectedUnit->id,
                     'bed_count' => $this->bedCount,
                     'desc' => $this->roomDesc,
+                    'color' => $roomColor,
                 ]);
+                
+                // ایجاد تخت‌ها به تعداد مشخص شده
+                for ($bedNumber = 1; $bedNumber <= $this->bedCount; $bedNumber++) {
+                    Bed::create([
+                        'room_id' => $room->id,
+                        'name' => $bedNumber,
+                        'state' => 'active',
+                        'state_ratio_resident' => 'empty', // حالت پیش‌فرض: خالی
+                        'desc' => "تخت شماره {$bedNumber} در اتاق {$this->roomName}",
+                    ]);
+                }
                 
                 $this->dispatch('show-toast', [
                     'type' => 'success',
                     'title' => 'ایجاد شد!',
-                    'description' => 'اتاق جدید با موفقیت ایجاد شد',
+                    'description' => "اتاق جدید با {$this->bedCount} تخت با موفقیت ایجاد شد",
                     'timer' => 3000
                 ]);
             }

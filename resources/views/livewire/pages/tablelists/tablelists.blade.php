@@ -4,8 +4,17 @@
             $colorClass = $this->getColorClass($data['unit']['id']);
         @endphp
         <div class="vahed-card mb-4 p-1">
-            <div class="card-header vahed-header " id="header_vahed_{{ $data['unit']['id'] }}">
-                <h4 class="mb-0 text-white">{{ $data['unit']['name'] }}</h4>
+            <div class="card-header vahed-header" id="header_vahed_{{ $data['unit']['id'] }}" 
+                 style="background: linear-gradient(135deg, {{ $data['unit']['color'] ?? '#667eea' }} 0%, {{ $data['unit']['color'] ?? '#764ba2' }} 100%) !important;
+                        backdrop-filter: blur(20px) saturate(180%);
+                        -webkit-backdrop-filter: blur(20px) saturate(180%);
+                        background: linear-gradient(135deg, {{ $data['unit']['color'] ?? '#667eea' }}cc 0%, {{ $data['unit']['color'] ?? '#764ba2' }}cc 100%) !important;
+                        border: 1px solid rgba(255, 255, 255, 0.3);
+                        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+                        position: relative;
+                        overflow: hidden;">
+                <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(135deg, {{ $data['unit']['color'] ?? '#667eea' }} 0%, {{ $data['unit']['color'] ?? '#764ba2' }} 100%); opacity: 0.85; z-index: -1;"></div>
+                <h4 class="mb-0 text-white" style="position: relative; z-index: 1;">{{ $data['unit']['name'] }}</h4>
             </div>
             <div class="card-body p-0">
                 <div class="row g-2 g-md-3">
@@ -13,23 +22,60 @@
                         <div class="col-12 col-md-6 col-lg-6 col-xl-6">
                             <div class="otagh-card h-100" id="{{ $roomData['room']['name'] }}">
                                 <div class="card-header otagh-header bg--light"
-                                     id="otagh-vahed{{ $data['unit']['id'] }}">
-                                    <h5 class="mb-0">{{ $roomData['room']['name'] }}</h5>
+                                     id="otagh-vahed{{ $data['unit']['id'] }}"
+                                     style="background: linear-gradient(135deg, {{ $roomData['room']['color'] ?? '#f093fb' }}cc 0%, {{ $roomData['room']['color'] ?? '#f5576c' }}cc 100%) !important; 
+                                            backdrop-filter: blur(20px) saturate(180%);
+                                            -webkit-backdrop-filter: blur(20px) saturate(180%);
+                                            border: 1px solid rgba(255, 255, 255, 0.3);
+                                            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+                                            color: white;
+                                            position: relative;
+                                            overflow: hidden;">
+                                    <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(135deg, {{ $roomData['room']['color'] ?? '#f093fb' }} 0%, {{ $roomData['room']['color'] ?? '#f5576c' }} 100%); opacity: 0.85; z-index: -1;"></div>
+                                    <h5 class="mb-0" style="position: relative; z-index: 1;">{{ $roomData['room']['name'] }}</h5>
                                 </div>
                                 <div class="card-body p-0" id="tableforvahed{{ $data['unit']['id'] }}">
                                     <!-- این کانتینر اسکرول افقی را به صورت شرطی مدیریت می‌کند -->
                                     <div class="conditional-scroll-container">
                                         <table class="table table-sm table-hover modern-table conditional-scroll-table" id="{{ $roomData['room']['name'] }}">
                                             <thead>
-                                            <tr>
-                                                <th>تخت</th>
-                                                <th>نام</th>
-                                                <th>تلفن</th>
-                                                <th>سررسید</th>
-                                                <th>مانده تا سررسید</th>
-                                                <th>وضعیت</th>
-                                                <th>عملیات</th>
+                                            <tr style="background: linear-gradient(135deg, {{ $roomData['room']['color'] ?? '#f093fb' }}cc 0%, {{ $roomData['room']['color'] ?? '#f5576c' }}cc 100%) !important;
+                                                    backdrop-filter: blur(20px) saturate(180%);
+                                                    -webkit-backdrop-filter: blur(20px) saturate(180%);
+                                                    border: 1px solid rgba(255, 255, 255, 0.3);
+                                                    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+                                                    position: relative;
+                                                    overflow: hidden;">
+                                                <th style="color: white !important; position: relative; z-index: 1; background: transparent !important;">تخت</th>
+                                                <th style="color: white !important; position: relative; z-index: 1; background: transparent !important;">نام</th>
+                                                <th style="color: white !important; position: relative; z-index: 1; background: transparent !important;">تلفن</th>
+                                                <th style="color: white !important; position: relative; z-index: 1; background: transparent !important;">سررسید</th>
+                                                <th style="color: white !important; position: relative; z-index: 1; background: transparent !important;">مانده تا سررسید</th>
+                                                <th style="color: white !important; position: relative; z-index: 1; background: transparent !important;">وضعیت</th>
+                                                <th style="color: white !important; position: relative; z-index: 1; background: transparent !important;">عملیات</th>
                                             </tr>
+                                            <style>
+                                                #{{ $roomData['room']['name'] }} thead tr {
+                                                    background: linear-gradient(135deg, {{ $roomData['room']['color'] ?? '#f093fb' }}cc 0%, {{ $roomData['room']['color'] ?? '#f5576c' }}cc 100%) !important;
+                                                }
+                                                #{{ $roomData['room']['name'] }} thead tr::before {
+                                                    content: '';
+                                                    position: absolute;
+                                                    top: 0;
+                                                    left: 0;
+                                                    right: 0;
+                                                    bottom: 0;
+                                                    background: linear-gradient(135deg, {{ $roomData['room']['color'] ?? '#f093fb' }} 0%, {{ $roomData['room']['color'] ?? '#f5576c' }} 100%);
+                                                    opacity: 0.85;
+                                                    z-index: 0;
+                                                    backdrop-filter: blur(20px) saturate(180%);
+                                                    -webkit-backdrop-filter: blur(20px) saturate(180%);
+                                                }
+                                                #{{ $roomData['room']['name'] }} thead th {
+                                                    background: transparent !important;
+                                                    border: none !important;
+                                                }
+                                            </style>
                                             </thead>
                                             <tbody>
                                             @foreach ($roomData['beds'] as $bed)

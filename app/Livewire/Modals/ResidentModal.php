@@ -5,6 +5,8 @@ namespace App\Livewire\Modals;
 use App\Models\Bed;
 use App\Models\Contract;
 use App\Models\Resident;
+use App\Models\Unit;
+use App\Models\Room;
 use App\Repositories\BedRepository;
 use App\Rules\PersianDate;
 use App\Traits\HasDateConversion;
@@ -25,6 +27,13 @@ class ResidentModal extends Component
     public $selectedBed = null;
     public $modalMode = 'add';
     public $editingResidentId = null;
+
+    // Unit and Room selection
+    public $selectedUnitId = null;
+    public $selectedRoomId = null;
+    public $units = [];
+    public $rooms = [];
+    public $beds = [];
 
     // Form properties for resident
     public $full_name_modal = '';
@@ -61,11 +70,22 @@ class ResidentModal extends Component
 
     protected function rules()
     {
-        return [
+        $rules = [
             'full_name_modal' => 'required|string|max:255',
             'payment_date_modal' => ['required', new PersianDate],
             'state_modal' => 'required|in:rezerve,nightly,active,leaving,exit',
         ];
+
+        // اگر تخت از قبل انتخاب نشده باشد، باید واحد و اتاق و تخت انتخاب شود
+        if (!$this->selectedBed || !is_array($this->selectedBed) || !isset($this->selectedBed['id'])) {
+            $rules['selectedUnitId'] = 'required|exists:units,id';
+            $rules['selectedRoomId'] = 'required|exists:rooms,id';
+            if (!$this->selectedBed || !is_array($this->selectedBed) || !isset($this->selectedBed['id'])) {
+                $rules['selectedBed'] = 'required';
+            }
+        }
+
+        return $rules;
     }
 
     protected $messages = [
@@ -74,35 +94,118 @@ class ResidentModal extends Component
         'state_modal.required' => 'وضعیت رو مشخص کنید',
     ];
 
-    public function openAddModal($bedName, $roomName)
+    public function openAddModal($bedName = null, $roomName = null)
     {
         $this->modalMode = 'add';
         $this->editingResidentId = null;
 
-        $bed = Bed::with('room')
-            ->where('name', $bedName)
-            ->whereHas('room', function ($query) use ($roomName) {
-                $query->where('name', $roomName);
-            })
-            ->first();
+        // اگر تخت و اتاق از قبل مشخص شده باشد (از tablelists)
+        if ($bedName && $roomName) {
+            $bed = Bed::with('room')
+                ->where('name', $bedName)
+                ->whereHas('room', function ($query) use ($roomName) {
+                    $query->where('name', $roomName);
+                })
+                ->first();
 
-        if ($bed) {
-            $this->selectedBed = [
-                'id' => $bed->id,
-                'name' => $bed->name,
-                'room' => $bed->room->name,
-            ];
-            $this->resetForm();
-            $this->showModal = true;
-            $this->resetValidation();
-            $this->dispatch('show-modal');
+            if ($bed) {
+                $this->selectedBed = [
+                    'id' => $bed->id,
+                    'name' => $bed->name,
+                    'room' => $bed->room->name,
+                ];
+                $this->selectedUnitId = $bed->room->unit_id;
+                $this->selectedRoomId = $bed->room_id;
+                $this->loadRooms();
+                $this->loadBeds();
+            }
         } else {
-            $this->dispatch('show-toast', [
-                'type' => 'error',
-                'title' => 'خطا!',
-                'description' => 'تخت مورد نظر یافت نشد',
-                'timer' => 3000
-            ]);
+            // حالت جدید: انتخاب واحد و اتاق
+            $this->selectedBed = null;
+            $this->loadUnits();
+        }
+
+        $this->resetForm();
+        $this->showModal = true;
+        $this->resetValidation();
+        $this->dispatch('show-modal');
+    }
+
+    public function loadUnits()
+    {
+        $this->units = Unit::all()->toArray();
+    }
+
+    public function updatedSelectedUnitId($value)
+    {
+        $this->selectedRoomId = null;
+        $this->selectedBed = null;
+        $this->beds = [];
+        if ($value) {
+            $this->loadRooms();
+        } else {
+            $this->rooms = [];
+        }
+    }
+
+    public function loadRooms()
+    {
+        if ($this->selectedUnitId) {
+            $this->rooms = Room::where('unit_id', $this->selectedUnitId)->get()->toArray();
+        } else {
+            $this->rooms = [];
+        }
+    }
+
+    public function updatedSelectedRoomId($value)
+    {
+        $this->selectedBed = null;
+        if ($value) {
+            $this->loadBeds();
+        } else {
+            $this->beds = [];
+        }
+    }
+
+    public function updatedSelectedBed($value)
+    {
+        if ($value && is_string($value)) {
+            try {
+                $bedData = json_decode($value, true);
+                if ($bedData && isset($bedData['id']) && isset($bedData['name'])) {
+                    $room = Room::with('unit')->find($this->selectedRoomId);
+                    $this->selectedBed = [
+                        'id' => (int)$bedData['id'],
+                        'name' => $bedData['name'],
+                        'room' => $room ? $room->name : '',
+                    ];
+                } else {
+                    $this->selectedBed = null;
+                }
+            } catch (\Exception $e) {
+                $this->selectedBed = null;
+            }
+        } elseif (!$value) {
+            $this->selectedBed = null;
+        }
+    }
+
+    public function loadBeds()
+    {
+        if ($this->selectedRoomId) {
+            $this->beds = Bed::where('room_id', $this->selectedRoomId)
+                ->orderBy('name')
+                ->get()
+                ->map(function ($bed) {
+                    return [
+                        'id' => $bed->id,
+                        'name' => $bed->name,
+                        'state_ratio_resident' => $bed->state_ratio_resident,
+                    ];
+                })
+                ->toArray();
+        } else {
+            $this->beds = [];
         }
     }
 
@@ -171,6 +274,11 @@ class ResidentModal extends Component
     {
         $this->showModal = false;
         $this->selectedBed = null;
+        $this->selectedUnitId = null;
+        $this->selectedRoomId = null;
+        $this->units = [];
+        $this->rooms = [];
+        $this->beds = [];
         $this->modalMode = 'add';
         $this->editingResidentId = null;
         $this->resetForm();
@@ -198,6 +306,15 @@ class ResidentModal extends Component
         $this->trust_modal = false;
         $this->state_modal = '';
         $this->payment_date_modal = '';
+        
+        // Reset unit/room selection only if bed was not pre-selected
+        if (!$this->selectedBed) {
+            $this->selectedUnitId = null;
+            $this->selectedRoomId = null;
+            $this->rooms = [];
+            $this->beds = [];
+        }
+        
         $this->resetValidation();
     }
 
@@ -217,6 +334,19 @@ class ResidentModal extends Component
 
     private function createNewResident()
     {
+        // اگر تخت انتخاب نشده باشد، از فیلدهای انتخاب شده استفاده کن
+        if (!$this->selectedBed && $this->selectedRoomId) {
+            // این حالت نباید رخ دهد چون validation آن را چک می‌کند
+            // اما برای اطمینان چک می‌کنیم
+            $this->dispatch('show-toast', [
+                'type' => 'error',
+                'title' => 'خطا!',
+                'description' => 'لطفاً یک تخت انتخاب کنید',
+                'timer' => 3000
+            ]);
+            return;
+        }
+
         $this->start_date = Carbon::now()->format('Y-m-d');
         $this->payment_date_modal = $this->toMiladi($this->payment_date_modal);
 
@@ -239,15 +369,17 @@ class ResidentModal extends Component
             'trust' => $this->trust_modal,
         ]);
 
+        $bedId = is_array($this->selectedBed) ? $this->selectedBed['id'] : $this->selectedBed;
+
         $contract = Contract::create([
             'resident_id' => $resident->id,
-            'bed_id' => $this->selectedBed['id'],
+            'bed_id' => $bedId,
             'payment_date' => $this->payment_date_modal,
             'state' => $this->state_modal,
             'start_date' => $this->start_date,
         ]);
 
-        \App\Models\Bed::where('id', $this->selectedBed['id'])
+        \App\Models\Bed::where('id', $bedId)
             ->update([
                 'state' => 'active',
                 'state_ratio_resident' => in_array($this->state_modal, ['nightly', 'active', 'leaving'])
@@ -356,6 +488,11 @@ class ResidentModal extends Component
         } else {
             $this->age_modal = 0;
         }
+    }
+
+    public function mount()
+    {
+        $this->loadUnits();
     }
 
     public function render()

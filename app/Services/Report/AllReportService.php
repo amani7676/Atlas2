@@ -233,6 +233,7 @@ class AllReportService
                         'name' => $unit->name,
                         'code' => $unit->code,
                         'desc' => $unit->desc,
+                        'color' => $unit->color ?? '#667eea',
                     ],
                     'rooms' => $unit->rooms->map(function ($room) {
                         return [
@@ -241,6 +242,7 @@ class AllReportService
                                 'name' => $room->name,
                                 'bed_count' => $room->bed_count,
                                 'desc' => $room->desc,
+                                'color' => $room->color ?? '#f093fb',
                             ],
                             'beds' => $room->beds->map(function ($bed) {
                                 return [

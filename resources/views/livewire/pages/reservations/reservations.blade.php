@@ -51,14 +51,18 @@
 
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label class="form-label required">شماره تماس</label>
+                                    <label class="form-label required">شماره تماس <span class="text-danger">*</span></label>
                                     <input type="text"
-                                           wire:model="phone"
+                                           wire:model.live="phone"
                                            class="form-control @error('phone') is-invalid @enderror"
-                                           placeholder="09xxxxxxxxx">
+                                           placeholder="0912-345-6789"
+                                           maxlength="13"
+                                           pattern="09\d{2}-\d{3}-\d{4}"
+                                           required>
                                     @error('phone')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
+                                    <small class="form-text text-muted">فرمت: 0912-345-6789 (11 رقم با 09 شروع شود)</small>
                                 </div>
                             </div>
 
@@ -261,6 +265,59 @@
                 var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
                     return new bootstrap.Tooltip(tooltipTriggerEl);
                 });
+
+                // فرمت‌دهی خودکار شماره تلفن
+                const phoneInput = document.querySelector('input[wire\\:model="phone"]');
+                if (phoneInput) {
+                    phoneInput.addEventListener('input', function (event) {
+                        let value = event.target.value.replace(/\D/g, ''); // حذف کاراکترهای غیر عددی
+                        
+                        // اگر با 0 شروع نشود، اضافه کردن 0
+                        if (value.length > 0 && !value.startsWith('0')) {
+                            value = '0' + value;
+                        }
+                        
+                        // محدود کردن به 11 رقم
+                        value = value.substring(0, 11);
+                        
+                        // فرمت کردن شماره تلفن
+                        let formattedValue = '';
+                        if (value.length > 0) {
+                            formattedValue = value.substring(0, 4);
+                        }
+                        if (value.length > 4) {
+                            formattedValue += '-' + value.substring(4, 7);
+                        }
+                        if (value.length > 7) {
+                            formattedValue += '-' + value.substring(7, 11);
+                        }
+                        
+                        event.target.value = formattedValue;
+                        
+                        // به‌روزرسانی Livewire
+                        if (window.Livewire) {
+                            const component = event.target.closest('[wire\\:id]');
+                            if (component) {
+                                const wireId = component.getAttribute('wire:id');
+                                const livewireComponent = window.Livewire.find(wireId);
+                                if (livewireComponent) {
+                                    livewireComponent.set('phone', formattedValue);
+                                }
+                            }
+                        }
+                    });
+
+                    // اعتبارسنجی هنگام blur
+                    phoneInput.addEventListener('blur', function (event) {
+                        let value = event.target.value.replace(/\D/g, '');
+                        
+                        if (value.length > 0 && value.length !== 11) {
+                            event.target.classList.add('is-invalid');
+                        } else if (value.length === 11 && value.startsWith('09')) {
+                            event.target.classList.remove('is-invalid');
+                        }
+                    });
+                }
             });
 
             // گوش دادن به رویداد 'show-toast'

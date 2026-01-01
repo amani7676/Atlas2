@@ -14,7 +14,8 @@ class Room extends Model
         'code',
         'unit_id',
         'bed_count',
-        'desc'
+        'desc',
+        'color'
     ];
 
     public function unit()

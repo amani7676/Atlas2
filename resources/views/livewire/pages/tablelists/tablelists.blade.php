@@ -269,11 +269,51 @@
             margin-bottom: 0;
         }
 
-        /* جلوگیری از شکستن متن */
+        /* تنظیم فونت و فاصله‌ها */
+        .conditional-scroll-table {
+            font-family: 'Vazirmatn', 'Tahoma', sans-serif !important;
+        }
+
         .conditional-scroll-table th,
         .conditional-scroll-table td {
-            white-space: nowrap;
             vertical-align: middle;
+            padding: 0.4rem 0.5rem !important;
+        }
+
+        /* اجازه نمایش کامل متن در td ها */
+        .conditional-scroll-table tbody td {
+            white-space: normal;
+            word-wrap: break-word;
+        }
+
+        /* input ها باید متن کامل را نشان دهند */
+        .conditional-scroll-table tbody td input.form-control-sm {
+            width: 100%;
+            min-width: 100px;
+            font-family: 'Vazirmatn', 'Tahoma', sans-serif;
+            font-size: 0.9rem;
+            padding: 0.25rem 0.4rem;
+        }
+
+        .conditional-scroll-table tbody td.resident-name input {
+            min-width: 120px;
+        }
+
+        .conditional-scroll-table tbody td.resident-phone input {
+            min-width: 110px;
+        }
+
+        .conditional-scroll-table tbody td.resident-date input {
+            min-width: 100px;
+        }
+
+        /* کوچک کردن فقط td شماره تخت - فقط عدد را نشان می‌دهد */
+        .conditional-scroll-table tbody td.bed-number {
+            padding: 0.25rem 0.3rem !important;
+            width: auto;
+            min-width: 30px;
+            max-width: 35px;
+            text-align: center;
         }
 
         /* دکمه‌های عملیات نباید بشکنند */
@@ -290,12 +330,33 @@
 
             .conditional-scroll-table th,
             .conditional-scroll-table td {
-                padding: 0.3rem 0.4rem;
+                padding: 0.25rem 0.3rem !important;
+            }
+            
+            .conditional-scroll-table tbody td.bed-number {
+                padding: 0.15rem 0.2rem !important;
+                font-size: 0.85rem;
+                min-width: 25px;
+                max-width: 30px;
+                text-align: center;
             }
 
-            .form-control-sm {
-                font-size: 0.75rem;
+            .conditional-scroll-table tbody td input.form-control-sm {
+                font-size: 0.8rem;
                 padding: 0.2rem 0.3rem;
+                min-width: 80px;
+            }
+
+            .conditional-scroll-table tbody td.resident-name input {
+                min-width: 100px;
+            }
+
+            .conditional-scroll-table tbody td.resident-phone input {
+                min-width: 90px;
+            }
+
+            .conditional-scroll-table tbody td.resident-date input {
+                min-width: 85px;
             }
 
             .action-buttons .btn {
@@ -327,12 +388,33 @@
 
             .conditional-scroll-table th,
             .conditional-scroll-table td {
-                padding: 0.4rem 0.5rem;
+                padding: 0.3rem 0.4rem !important;
+            }
+            
+            .conditional-scroll-table tbody td.bed-number {
+                padding: 0.2rem 0.3rem !important;
+                font-size: 0.9rem;
+                min-width: 28px;
+                max-width: 32px;
+                text-align: center;
             }
 
-            .form-control-sm {
-                font-size: 0.8rem;
-                padding: 0.25rem 0.4rem;
+            .conditional-scroll-table tbody td input.form-control-sm {
+                font-size: 0.85rem;
+                padding: 0.25rem 0.35rem;
+                min-width: 90px;
+            }
+
+            .conditional-scroll-table tbody td.resident-name input {
+                min-width: 110px;
+            }
+
+            .conditional-scroll-table tbody td.resident-phone input {
+                min-width: 100px;
+            }
+
+            .conditional-scroll-table tbody td.resident-date input {
+                min-width: 95px;
             }
 
             .action-buttons .btn {
@@ -349,7 +431,30 @@
 
             .conditional-scroll-table th,
             .conditional-scroll-table td {
-                padding: 0.5rem 0.6rem;
+                padding: 0.4rem 0.5rem !important;
+            }
+            
+            .conditional-scroll-table tbody td.bed-number {
+                padding: 0.25rem 0.35rem !important;
+                min-width: 30px;
+                max-width: 35px;
+                text-align: center;
+            }
+
+            .conditional-scroll-table tbody td input.form-control-sm {
+                min-width: 100px;
+            }
+
+            .conditional-scroll-table tbody td.resident-name input {
+                min-width: 120px;
+            }
+
+            .conditional-scroll-table tbody td.resident-phone input {
+                min-width: 110px;
+            }
+
+            .conditional-scroll-table tbody td.resident-date input {
+                min-width: 100px;
             }
         }
 
@@ -361,7 +466,30 @@
 
             .conditional-scroll-table th,
             .conditional-scroll-table td {
-                padding: 0.6rem 0.7rem;
+                padding: 0.5rem 0.6rem !important;
+            }
+            
+            .conditional-scroll-table tbody td.bed-number {
+                padding: 0.3rem 0.4rem !important;
+                min-width: 32px;
+                max-width: 36px;
+                text-align: center;
+            }
+
+            .conditional-scroll-table tbody td input.form-control-sm {
+                min-width: 110px;
+            }
+
+            .conditional-scroll-table tbody td.resident-name input {
+                min-width: 130px;
+            }
+
+            .conditional-scroll-table tbody td.resident-phone input {
+                min-width: 120px;
+            }
+
+            .conditional-scroll-table tbody td.resident-date input {
+                min-width: 110px;
             }
         }
 
@@ -373,7 +501,30 @@
 
             .conditional-scroll-table th,
             .conditional-scroll-table td {
-                padding: 0.7rem 0.8rem;
+                padding: 0.5rem 0.6rem !important;
+            }
+            
+            .conditional-scroll-table tbody td.bed-number {
+                padding: 0.35rem 0.45rem !important;
+                min-width: 35px;
+                max-width: 40px;
+                text-align: center;
+            }
+
+            .conditional-scroll-table tbody td input.form-control-sm {
+                min-width: 120px;
+            }
+
+            .conditional-scroll-table tbody td.resident-name input {
+                min-width: 140px;
+            }
+
+            .conditional-scroll-table tbody td.resident-phone input {
+                min-width: 130px;
+            }
+
+            .conditional-scroll-table tbody td.resident-date input {
+                min-width: 120px;
             }
         }
 

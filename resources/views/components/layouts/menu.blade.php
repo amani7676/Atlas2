@@ -68,7 +68,7 @@
                 </li>
 
                 <li class="nav-item dropdown material-dropdown">
-                    <a class="nav-link material-link dropdown-toggle {{ request()->routeIs('dormitory.builder') || request()->routeIs('coolers') || request()->routeIs('keys') || request()->routeIs('Bed_statistic') ? 'active' : '' }}" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false" data-ripple>
+                    <a class="nav-link material-link dropdown-toggle {{ request()->routeIs('dormitory.builder') || request()->routeIs('coolers') || request()->routeIs('keys') || request()->routeIs('heaters') || request()->routeIs('Bed_statistic') ? 'active' : '' }}" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false" data-ripple>
                         <span class="material-link-icon">
                             <i class="fas fa-ellipsis-h"></i>
                         </span>
@@ -92,6 +92,12 @@
                             <a class="dropdown-item material-dropdown-item {{ request()->routeIs('keys') ? 'active' : '' }}" href="{{ route('keys') }}" data-ripple>
                                 <i class="fa-solid fa-key me-2"></i>
                                 کلیدها
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item material-dropdown-item {{ request()->routeIs('heaters') ? 'active' : '' }}" href="{{ route('heaters') }}" data-ripple>
+                                <i class="fas fa-fire me-2"></i>
+                                هیترها
                             </a>
                         </li>
                         <li>

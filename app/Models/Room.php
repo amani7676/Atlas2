@@ -41,6 +41,11 @@ class Room extends Model
         return $this->hasMany(Key::class);
     }
 
+    public function heater()
+    {
+        return $this->hasOne(Heater::class);
+    }
+
 
     protected $casts = [
         'bed_count' => 'integer',

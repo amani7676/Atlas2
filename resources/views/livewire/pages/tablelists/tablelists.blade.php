@@ -280,19 +280,27 @@
             padding: 0.4rem 0.5rem !important;
         }
 
+        /* فاصله بالا و پایین بین ردیف‌ها */
+        .conditional-scroll-table tbody tr {
+            margin-top: 0.2rem;
+            margin-bottom: 0.2rem;
+        }
+
         /* اجازه نمایش کامل متن در td ها */
         .conditional-scroll-table tbody td {
             white-space: normal;
             word-wrap: break-word;
         }
 
-        /* input ها باید متن کامل را نشان دهند */
+        /* input ها باید متن کامل را نشان دهند - ارتفاع کمی بیشتر */
         .conditional-scroll-table tbody td input.form-control-sm {
             width: 100%;
             min-width: 100px;
             font-family: 'Vazirmatn', 'Tahoma', sans-serif;
             font-size: 0.9rem;
-            padding: 0.25rem 0.4rem;
+            padding: 0.35rem 0.4rem;
+            height: auto;
+            min-height: 32px;
         }
 
         .conditional-scroll-table tbody td.resident-name input {
@@ -341,10 +349,16 @@
                 text-align: center;
             }
 
+            .conditional-scroll-table tbody tr {
+                margin-top: 0.15rem;
+                margin-bottom: 0.15rem;
+            }
+
             .conditional-scroll-table tbody td input.form-control-sm {
                 font-size: 0.8rem;
-                padding: 0.2rem 0.3rem;
+                padding: 0.3rem 0.3rem;
                 min-width: 80px;
+                min-height: 28px;
             }
 
             .conditional-scroll-table tbody td.resident-name input {
@@ -399,10 +413,16 @@
                 text-align: center;
             }
 
+            .conditional-scroll-table tbody tr {
+                margin-top: 0.18rem;
+                margin-bottom: 0.18rem;
+            }
+
             .conditional-scroll-table tbody td input.form-control-sm {
                 font-size: 0.85rem;
-                padding: 0.25rem 0.35rem;
+                padding: 0.32rem 0.35rem;
                 min-width: 90px;
+                min-height: 30px;
             }
 
             .conditional-scroll-table tbody td.resident-name input {
@@ -441,8 +461,15 @@
                 text-align: center;
             }
 
+            .conditional-scroll-table tbody tr {
+                margin-top: 0.2rem;
+                margin-bottom: 0.2rem;
+            }
+
             .conditional-scroll-table tbody td input.form-control-sm {
                 min-width: 100px;
+                padding: 0.35rem 0.4rem;
+                min-height: 32px;
             }
 
             .conditional-scroll-table tbody td.resident-name input {
@@ -476,8 +503,15 @@
                 text-align: center;
             }
 
+            .conditional-scroll-table tbody tr {
+                margin-top: 0.2rem;
+                margin-bottom: 0.2rem;
+            }
+
             .conditional-scroll-table tbody td input.form-control-sm {
                 min-width: 110px;
+                padding: 0.38rem 0.4rem;
+                min-height: 34px;
             }
 
             .conditional-scroll-table tbody td.resident-name input {
@@ -511,8 +545,15 @@
                 text-align: center;
             }
 
+            .conditional-scroll-table tbody tr {
+                margin-top: 0.25rem;
+                margin-bottom: 0.25rem;
+            }
+
             .conditional-scroll-table tbody td input.form-control-sm {
                 min-width: 120px;
+                padding: 0.4rem 0.4rem;
+                min-height: 36px;
             }
 
             .conditional-scroll-table tbody td.resident-name input {

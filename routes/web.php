@@ -25,7 +25,8 @@ Route::middleware('guest')->group(function () {
     });
 
     Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
-    Route::post('/login', [AuthController::class, 'login']);
+    // Rate limiting برای login - حداکثر 5 تلاش در 15 دقیقه
+    Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:5,15');
 });
 
 

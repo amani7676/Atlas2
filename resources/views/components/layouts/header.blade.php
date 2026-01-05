@@ -22,3 +22,40 @@
 
 
 @livewireStyles
+
+<style>
+    /* تنظیم فونت سایز 16px برای همه متن‌های سایت */
+    body, 
+    body *,
+    .form-control,
+    .form-select,
+    input,
+    textarea,
+    select,
+    button,
+    a,
+    p,
+    span,
+    div,
+    h1, h2, h3, h4, h5, h6,
+    label,
+    table,
+    th,
+    td {
+        font-size: 16px !important;
+    }
+    
+    /* استثنا برای عناصر کوچک */
+    .small,
+    small,
+    .text-sm,
+    .badge,
+    .btn-sm {
+        font-size: 14px !important;
+    }
+    
+    /* استثنا برای عناصر خیلی کوچک */
+    .text-xs {
+        font-size: 12px !important;
+    }
+</style>

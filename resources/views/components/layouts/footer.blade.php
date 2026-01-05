@@ -1,6 +1,10 @@
 <!-- Bootstrap Bundle with Popper -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js" defer crossorigin="anonymous"></script>
-<script src="{{ asset("assets/js/app.js") }}?v={{ filemtime(public_path('assets/js/app.js')) }}" defer></script>
+@php
+    $jsPath = public_path('assets/js/app.js');
+    $jsVersion = file_exists($jsPath) ? filemtime($jsPath) : time();
+@endphp
+<script src="{{ asset("assets/js/app.js") }}?v={{ $jsVersion }}" defer></script>
 <!-- Vite compiled assets -->
 @vite(['resources/js/app.js'])
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11" defer crossorigin="anonymous"></script>
@@ -124,6 +128,38 @@
                 }
             }
         });
+
+        // بهبود dropdown در موبایل - استفاده از Bootstrap dropdown
+        if (window.innerWidth <= 991.98) {
+            // استفاده از Bootstrap dropdown API
+            const dropdownToggles = document.querySelectorAll('.dropdown-toggle');
+            dropdownToggles.forEach(toggle => {
+                toggle.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    const dropdown = bootstrap.Dropdown.getInstance(this);
+                    if (dropdown) {
+                        dropdown.toggle();
+                    } else {
+                        // اگر dropdown instance وجود نداشت، ایجاد کن
+                        new bootstrap.Dropdown(this).toggle();
+                    }
+                });
+            });
+
+            // بستن dropdown با کلیک خارج از آن
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('.material-dropdown')) {
+                    document.querySelectorAll('.dropdown-toggle[aria-expanded="true"]').forEach(toggle => {
+                        const dropdown = bootstrap.Dropdown.getInstance(toggle);
+                        if (dropdown) {
+                            dropdown.hide();
+                        }
+                    });
+                }
+            });
+        }
     });
 
     window.addEventListener('scroll', function() {

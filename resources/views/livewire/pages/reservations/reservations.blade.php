@@ -1,5 +1,5 @@
 <div>
-    <div class="container-fluid mt-3" style="width: 90%">
+    <div class="container-fluid mt-3 px-3 px-md-4" style="width: 90%; max-width: 100%;">
 
 
         {{-- Header Section --}}
@@ -151,17 +151,17 @@
             </div>
             <div class="card-body p-0">
                 @if(count($reserves) > 0)
-                    <div class="table-responsive">
-                        <table class="table table-hover mb-0">
+                    <!-- کانتینر با کلاس سفارشی برای کنترل اسکرول -->
+                    <div class="conditional-scroll-container">
+                        <table class="table table-hover mb-0 conditional-scroll-table">
                             <thead class="table-light">
                             <tr>
-                                <th style="width: 15%">نام و نام خانوادگی</th>
-                                <th style="width: 15%">شماره تماس</th>
-                                <th style="width: 5%">اولویت</th>
-                                <th style="width: 35%">یادداشت</th>
-
-                                <th style="width: 15%">تاریخ ایجاد</th>
-                                <th width="150">عملیات</th>
+                                <th>نام و نام خانوادگی</th>
+                                <th>شماره تماس</th>
+                                <th>اولویت</th>
+                                <th>یادداشت</th>
+                                <th>تاریخ ایجاد</th>
+                                <th>عملیات</th>
                             </tr>
                             </thead>
                             <tbody>
@@ -179,7 +179,7 @@
                                             {{ $this->getPriorityLabel($reserve->priority) }}
                                         </span>
                                     </td>
-                                    <td >
+                                    <td>
                                         @if($reserve->note)
                                             <span class="text-muted"
                                                   title="{{ $reserve->note }}"
@@ -196,9 +196,9 @@
                                         </small>
                                     </td>
                                     <td>
-                                        <div class="btn-group btn-group-sm">
+                                        <div class="btn-group btn-group-sm action-buttons">
                                             <button wire:click="edit({{ $reserve->id }})"
-                                                    class="btn btn-outline-primary " style="margin-left: 10px;"
+                                                    class="btn btn-outline-primary"
                                                     title="ویرایش">
                                                 <i class="fas fa-edit"></i>
                                             </button>
@@ -228,7 +228,6 @@
 
     @push('styles')
         <style>
-
             .required::after {
                 content: " *";
                 color: red;
@@ -253,6 +252,89 @@
             .card-header {
                 background-color: #f8f9fa;
                 border-bottom: 1px solid #e9ecef;
+            }
+
+            /* --- استایل‌های واکنش‌گرا برای اسکرول افقی --- */
+            .conditional-scroll-container {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                width: 100%;
+            }
+
+            .conditional-scroll-table {
+                min-width: 800px;
+                width: 100%;
+                margin-bottom: 0;
+            }
+
+            .conditional-scroll-table th,
+            .conditional-scroll-table td {
+                white-space: nowrap;
+                vertical-align: middle;
+            }
+
+            .action-buttons {
+                white-space: nowrap;
+            }
+
+            /* موبایل (تا 576px) */
+            @media (max-width: 575.98px) {
+                .conditional-scroll-table {
+                    min-width: 700px;
+                    font-size: 0.85rem;
+                }
+
+                .conditional-scroll-table th,
+                .conditional-scroll-table td {
+                    padding: 0.4rem 0.5rem;
+                }
+
+                .btn-group-sm > .btn {
+                    padding: 0.3rem 0.6rem;
+                    font-size: 0.9rem;
+                }
+            }
+
+            /* تبلت (576px تا 768px) */
+            @media (min-width: 576px) and (max-width: 767.98px) {
+                .conditional-scroll-table {
+                    min-width: 750px;
+                }
+
+                .conditional-scroll-table th,
+                .conditional-scroll-table td {
+                    padding: 0.5rem 0.6rem;
+                }
+            }
+
+            /* تبلت (768px تا 992px) */
+            @media (min-width: 768px) and (max-width: 991.98px) {
+                .conditional-scroll-table {
+                    min-width: 800px;
+                }
+
+                .conditional-scroll-table th,
+                .conditional-scroll-table td {
+                    padding: 0.6rem 0.7rem;
+                }
+            }
+
+            /* موبایل - تنظیم container */
+            @media (max-width: 767.98px) {
+                .container-fluid {
+                    width: 100% !important;
+                    padding-left: 0.75rem !important;
+                    padding-right: 0.75rem !important;
+                }
+
+                .card-header h5 {
+                    font-size: 18px !important;
+                }
+
+                .btn {
+                    font-size: 18px !important;
+                    padding: 0.5rem 1rem !important;
+                }
             }
         </style>
     @endpush

@@ -212,8 +212,8 @@
 
     {{-- Modern Key Modal --}}
     @if($showKeyModal)
-        <div class="modern-modal-overlay" wire:ignore.self>
-            <div class="modern-modal-container">
+        <div class="modern-modal-overlay" wire:ignore.self wire:click="$set('showKeyModal', false)">
+            <div class="modern-modal-container" wire:click.stop>
                 <div class="modern-modal">
                     <form wire:submit.prevent="saveKey">
                         <div class="modern-modal-header">
@@ -236,23 +236,23 @@
                                         <label class="modern-label">
                                             نام کلید <span class="text-danger">*</span>
                                         </label>
-                                        <input type="text" wire:model.defer="keyName"
+                                        <input type="text" wire:model="keyName"
                                                class="modern-input @error('keyName') is-invalid @enderror"
                                                placeholder="نام کلید را وارد کنید">
-                                @error('keyName')
+                                        @error('keyName')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                         @enderror
                                     </div>
-                            </div>
+                                </div>
                                 <div class="col-md-6">
                                     <div class="modern-input-wrapper">
                                         <label class="modern-label">
                                             کد کلید <span class="text-danger">*</span>
                                         </label>
-                                        <input type="text" wire:model.defer="keyCode"
+                                        <input type="text" wire:model="keyCode"
                                                class="modern-input @error('keyCode') is-invalid @enderror"
                                                placeholder="کد کلید را وارد کنید">
-                                @error('keyCode')
+                                        @error('keyCode')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                         @enderror
                                     </div>
@@ -260,17 +260,17 @@
                                 <div class="col-12">
                                     <div class="modern-input-wrapper">
                                         <label class="modern-label">توضیحات</label>
-                                        <textarea wire:model.defer="keyDesc" class="modern-input" rows="3"
+                                        <textarea wire:model="keyDesc" class="modern-input" rows="3"
                                                   placeholder="توضیحات اختیاری..."></textarea>
                                     </div>
                                 </div>
                                 <div class="col-12">
                                     <div class="modern-input-wrapper">
                                         <label class="modern-label">یادداشت</label>
-                                        <input type="text" wire:model.defer="keyNote" class="modern-input"
+                                        <input type="text" wire:model="keyNote" class="modern-input"
                                                placeholder="یادداشت اختیاری...">
-                            </div>
-                            </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         <div class="modern-modal-footer">

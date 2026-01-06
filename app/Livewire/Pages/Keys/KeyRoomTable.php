@@ -83,8 +83,9 @@ class KeyRoomTable extends Component
         $this->showKeyModal = true;
     }
 
-    public function prepareKeyEdit(Key $key)
+    public function prepareKeyEdit($keyId)
     {
+        $key = Key::findOrFail($keyId);
         $this->resetKeyForm();
         $this->keyId = $key->id;
         $this->keyName = $key->name;
@@ -111,10 +112,28 @@ class KeyRoomTable extends Component
             'note' => $data['keyNote'] ?? null,
         ];
 
-        Key::updateOrCreate(['id' => $this->keyId], $keyData);
+        if ($this->keyId) {
+            $key = Key::findOrFail($this->keyId);
+            $key->update($keyData);
+            $message = 'کلید با موفقیت ویرایش شد.';
+        } else {
+            Key::create($keyData);
+            $message = 'کلید با موفقیت ایجاد شد.';
+        }
 
-        session()->flash('message', $this->keyId ? 'کلید با موفقیت ویرایش شد.' : 'کلید با موفقیت ایجاد شد.');
+        $this->resetKeyForm();
         $this->showKeyModal = false;
+        
+        $this->js("
+            if (typeof cuteToast === 'function') {
+                cuteToast({
+                    type: 'success',
+                    title: 'موفقیت!',
+                    description: '{$message}',
+                    timer: 5000
+                });
+            }
+        ");
     }
 
     public function resetKeyForm()

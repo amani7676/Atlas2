@@ -232,6 +232,8 @@ class EmptyBeds extends Component
         $this->allReportService ??= app(AllReportService::class);
         $this->beds ??= app(BedRepository::class);
 
-        return view('livewire.pages.home.componets.empty-beds',);
+        return view('livewire.pages.home.componets.empty-beds', [
+            'emptyBeds' => $this->beds->getEmptyAndActiveBeds()
+        ]);
     }
 }

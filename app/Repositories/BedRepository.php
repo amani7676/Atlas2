@@ -77,6 +77,23 @@ class BedRepository
         ])->get();
     }
 
+    /**
+     * دریافت تخت‌های خالی و فعال
+     *
+     * @return Collection|array
+     */
+    public function getEmptyAndActiveBeds(): Collection|array
+    {
+        return $this->model->with([
+            'room.unit', // اتاق و واحد مربوطه
+            'contracts.resident' // قراردادها و رزیدنت مربوطه
+        ])
+        ->where('state', BedState::ACTIVE->value)
+        ->where('state_ratio_resident', BedResidentState::EMPTY->value)
+        ->whereHas('room') // اطمینان از اینکه اتاق وجود دارد
+        ->get();
+    }
+
 
     public function getBedWithResidentId($residentId)
     {

@@ -145,7 +145,7 @@ class UnitService
                                         ];
                                     })->values()->toArray(),
                                      // Delay calculation
-                                    'delay' => $this->calculateDelay($contract->end_date),
+                                    'delay' => $this->calculateDelay($contract->payment_date),
                                 ];
                             }
                         }

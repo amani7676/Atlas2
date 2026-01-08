@@ -144,6 +144,8 @@ class UnitService
                                             'note_deleted_at' => $note->deleted_at,
                                         ];
                                     })->values()->toArray(),
+                                     // Delay calculation
+                                    'delay' => $this->calculateDelay($contract->end_date),
                                 ];
                             }
                         }
@@ -154,6 +156,19 @@ class UnitService
             })
             ->keyBy('resident_id');
     }
+
+    public function calculateDelay($paymentDate)
+    {
+        if (!$paymentDate) {
+            return null;
+        }
+        
+        $today = now()->startOfDay();
+        $pay = \Carbon\Carbon::parse($paymentDate)->startOfDay();
+        
+        return $today->diffInDays($pay, false); // false for signed difference
+    }
+    
 
     public function getUnitsWithRoomsAndBeds()
     {

@@ -56,6 +56,7 @@ Route::middleware(['auth.custom'])->group(function () {
     Route::get('/test', \App\Livewire\Rules\TestPage::class)->name('test.page');
     Route::get('/simple-categories', \App\Livewire\Rules\SimpleCategories::class)->name('simple.categories');
     Route::get('/category-management', \App\Livewire\Rules\CategoryManagement::class)->name('category.management');
+    Route::get('/resident-contacts', \App\Livewire\Pages\ResidentContacts\ResidentContacts::class)->name('resident.contacts');
     
     // SMS Credit Routes
     Route::get('/api/sms/credit', [SmsController::class, 'getCredit'])->name('sms.credit');

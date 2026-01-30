@@ -92,6 +92,6 @@ class ListCurrentResident extends Component
     public function render()
     {
         return view('livewire.pages.reports.list-current-resident')
-            ->title("لیست اقامتگران حاضر");
+            ->title('اقای عنایتی');
     }
 }

@@ -1,0 +1,31 @@
+{
+  "name": "alirahimi/livewire-persian-datepicker",
+  "description": "The Persian Datepicker component for Laravel Livewire",
+  "type": "component",
+  "license": "MIT",
+  "autoload": {
+    "psr-4": {
+      "AliRahimi\\LivewirePersianDatepicker\\": "src"
+    }
+  },
+  "authors": [
+    {
+      "name": "ali rahimi",
+      "email": "alirahimi818@gmail.com"
+    }
+  ],
+  "extra": {
+    "laravel": {
+      "providers": [
+        "AliRahimi\\LivewirePersianDatepicker\\LivewirePersianDatepickerServiceProvider"
+      ],
+      "aliases": {
+        "PersianDatepicker": "LivewirePersianDatepicker"
+      }
+    }
+  },
+  "require": {
+    "php": "^8.0.2",
+    "livewire/livewire": ">=2.0"
+  }
+}

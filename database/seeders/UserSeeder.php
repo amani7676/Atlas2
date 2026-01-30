@@ -19,3 +19,4 @@ class UserSeeder extends Seeder
         ]);
     }
 }
+// php artisan db:seed --class=UserSeeder

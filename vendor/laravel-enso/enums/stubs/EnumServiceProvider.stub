@@ -1,0 +1,12 @@
+<?php
+
+namespace App\Providers;
+
+use LaravelEnso\Enums\EnumServiceProvider as ServiceProvider;
+
+class EnumServiceProvider extends ServiceProvider
+{
+    public $register = [
+        // 'localEnum' => LocalEnum::class,
+    ];
+}

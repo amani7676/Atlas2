@@ -129,10 +129,19 @@
                                                             <div>
                                                                 <input type="text"
                                                                        wire:model="phone.{{ $resident['id'] }}"
-                                                                       class="form-control form-control-sm phone-input "
+                                                                       class="form-control form-control-sm phone-input @error('phone.'.$resident['id']) is-invalid @enderror"
                                                                        maxlength="13"
-                                                                       value="{{ $phone[$resident['id']] ?? '' }}">
-
+                                                                       value="{{ $phone[$resident['id']] ?? '' }}"
+                                                                       placeholder="09xxxxxxxxx">
+                                                                @error('phone.'.$resident['id'])
+                                                                    <div class="invalid-feedback">{{ $message }}</div>
+                                                                @enderror
+                                                                @if($phone[$resident['id']] && !preg_match('/^09[0-9]{9}$/', preg_replace('/[^0-9]/', '', $phone[$resident['id']])))
+                                                                    <div class="text-danger small mt-1">
+                                                                        <i class="fas fa-exclamation-triangle me-1"></i>
+                                                                        نامعتبر
+                                                                    </div>
+                                                                @endif
                                                             </div>
                                                         </td>
 

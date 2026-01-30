@@ -56,6 +56,6 @@ class BedStatistics extends Component
     public function render()
     {
         return view('livewire.pages.bed-statistics.bed-statistics')
-            ->title("آمار کلی");
+            ->title('آمار تخت‌ها');
     }
 }

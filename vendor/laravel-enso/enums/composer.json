@@ -1,0 +1,45 @@
+{
+    "name": "laravel-enso/enums",
+    "description": "Enums for Laravel Enso",
+    "keywords": [
+        "laravel-enso",
+        "enums"
+    ],
+    "homepage": "https://github.com/laravel-enso/enums",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Reza Fouladi",
+            "email": "raftx24@gmail.com",
+            "homepage": "https://laravel-enso.com",
+            "role": "Developer"
+        },
+        {
+            "name": "Adrian Ocneanu",
+            "email": "aocneanu@gmail.com",
+            "homepage": "https://laravel-enso.com",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "laravel/framework": "^7.0|^8.0|^9.0|^10.0|^11.0",
+        "php": "^8.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "LaravelEnso\\Enums\\": "src/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "LaravelEnso\\Enums\\AppServiceProvider",
+                "LaravelEnso\\Enums\\EnumServiceProvider"
+            ],
+            "aliases": {
+                "Enums": "LaravelEnso\\Enums\\Facades\\Enums"
+            }
+        }
+    }
+}

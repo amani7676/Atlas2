@@ -1,0 +1,20 @@
+risky: true
+
+version: 8
+
+preset: laravel
+
+enabled:
+  - strict
+  - unalign_double_arrow
+
+disabled:
+  - short_array_syntax
+
+finder:
+  exclude:
+    - "public"
+    - "resources"
+    - "tests"
+  name:
+    - "*.php"

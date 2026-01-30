@@ -545,7 +545,7 @@ class DormitoryBuilder extends Component
     public function render()
     {
         return view('livewire.pages.dormitory.dormitory-builder')
-            ->title("ساخت خوابگاه");
+            ->title('ساخت خوابگاه');
     }
 }
 

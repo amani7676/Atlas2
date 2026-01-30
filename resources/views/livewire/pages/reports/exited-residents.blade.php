@@ -124,11 +124,11 @@
 
         <!-- جدول اقامتگران خروجی -->
         <div class="card">
-            <div class="card-header bg-danger text-white">
+            <div class="card-header bg-light text-dark border">
                 <h5 class="mb-0">
                     <i class="fas fa-sign-out-alt me-2"></i>
                     اقامتگران خروجی
-                    <span class="badge bg-light text-dark ms-2">{{ count($residents) }}</span>
+                    <span class="badge bg-primary ms-2">{{ count($residents) }}</span>
                 </h5>
             </div>
             <div class="card-body p-0">
@@ -143,10 +143,37 @@
                                 <th>واحد</th>
                                 <th>اتاق</th>
                                 <th>تخت</th>
-                                <th>تاریخ شروع</th>
-                                <th>تاریخ پایان</th>
-                                <th>تاریخ حذف</th>
-                                <th>توضیحات</th>
+                                <th>
+                                    <a href="#" wire:click.prevent="sortBy('start_date')" class="text-decoration-none text-dark">
+                                        تاریخ شروع
+                                        @if($sortBy === 'start_date')
+                                            <i class="fas fa-sort-{{ $sortDirection === 'asc' ? 'up' : 'down' }} ms-1"></i>
+                                        @else
+                                            <i class="fas fa-sort ms-1"></i>
+                                        @endif
+                                    </a>
+                                </th>
+                                <th>
+                                    <a href="#" wire:click.prevent="sortBy('end_date')" class="text-decoration-none text-dark">
+                                        تاریخ پایان
+                                        @if($sortBy === 'end_date')
+                                            <i class="fas fa-sort-{{ $sortDirection === 'asc' ? 'up' : 'down' }} ms-1"></i>
+                                        @else
+                                            <i class="fas fa-sort ms-1"></i>
+                                        @endif
+                                    </a>
+                                </th>
+                                <th>
+                                    <a href="#" wire:click.prevent="sortBy('deleted_at')" class="text-decoration-none text-dark">
+                                        تاریخ حذف
+                                        @if($sortBy === 'deleted_at')
+                                            <i class="fas fa-sort-{{ $sortDirection === 'asc' ? 'up' : 'down' }} ms-1"></i>
+                                        @else
+                                            <i class="fas fa-sort ms-1"></i>
+                                        @endif
+                                    </a>
+                                </th>
+                                <th>عملیات</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -155,7 +182,26 @@
                                     <td>{{ $index + 1 }}</td>
                                     <td>{{ $data['resident']['full_name'] ?? '-' }}</td>
                                     <td>{{ $data['resident']['document'] ?? '-' }}</td>
-                                    <td>{{ $data['resident']['phone'] ?? '-' }}</td>
+                                    <td>
+                                        @php
+                                            $phone = $data['resident']['phone'] ?? '';
+                                            $cleanPhone = preg_replace('/[^0-9]/', '', $phone);
+                                            $isValid = preg_match('/^09[0-9]{9}$/', $cleanPhone);
+                                        @endphp
+                                        @if($isValid && $phone !== '-')
+                                            <span class="text-success">
+                                                <i class="fas fa-phone me-1"></i>
+                                                {{ $phone }}
+                                            </span>
+                                        @elseif($phone !== '-')
+                                            <span class="text-danger text-decoration-line-through">
+                                                <i class="fas fa-exclamation-triangle me-1"></i>
+                                                {{ $phone }}
+                                            </span>
+                                        @else
+                                            {{ $phone }}
+                                        @endif
+                                    </td>
                                     <td>{{ $data['unit']['name'] ?? '-' }}</td>
                                     <td>{{ $data['room']['name'] ?? '-' }}</td>
                                     <td>
@@ -178,21 +224,14 @@
                                         @endif
                                     </td>
                                     <td>
-                                        @foreach ($data['notes'] as $note)
-                                            @php
-                                                $noteRepository = app(\App\Repositories\NoteRepository::class);
-                                                $noteText = $note['note'];
-                                                if ($note['type'] === 'end_date' && preg_match('/(\d{4})\/(\d{1,2})\/(\d{1,2})/', $noteText, $matches)) {
-                                                    $noteText = $matches[2] . '/' . $matches[3];
-                                                } else {
-                                                    $noteText = $noteRepository->formatNoteForDisplay($note);
-                                                }
-                                                $badgeStyle = $noteRepository->getNoteBadgeStyle($note['type']);
-                                            @endphp
-                                            <span class="badge rounded-pill" style="{{ $badgeStyle }} margin: 2px; display: inline-block; font-size: 0.85rem;">
-                                                {{ $noteText }}
-                                            </span>
-                                        @endforeach
+                                        <button 
+                                            wire:click="deleteResident({{ $data['resident']['id'] }})"
+                                            class="btn btn-sm btn-danger"
+                                            onclick="return confirm('آیا از حذف کامل این اقامتگر اطمینان دارید؟ این عمل غیرقابل بازگشت است.')"
+                                            title="حذف کامل اقامتگر">
+                                            <i class="fas fa-trash-alt"></i>
+                                            حذف
+                                        </button>
                                     </td>
                                 </tr>
                             @empty

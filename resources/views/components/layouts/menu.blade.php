@@ -92,7 +92,7 @@
                 </li>
 
                 <li class="nav-item dropdown material-dropdown">
-                    <a class="nav-link material-link dropdown-toggle {{ request()->routeIs('dormitory.builder') || request()->routeIs('coolers') || request()->routeIs('keys') || request()->routeIs('heaters') || request()->routeIs('Bed_statistic') || request()->routeIs('rules.manager') ? 'active' : '' }}" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false" data-ripple>
+                    <a class="nav-link material-link dropdown-toggle {{ request()->routeIs('dormitory.builder') || request()->routeIs('coolers') || request()->routeIs('keys') || request()->routeIs('heaters') || request()->routeIs('Bed_statistic') || request()->routeIs('rules.manager') || request()->routeIs('resident.contacts') ? 'active' : '' }}" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false" data-ripple>
                         <span class="material-link-icon">
                             <i class="fas fa-ellipsis-h"></i>
                         </span>
@@ -140,6 +140,12 @@
                             <a class="dropdown-item material-dropdown-item {{ request()->routeIs('category.management') ? 'active' : '' }}" href="{{ route('category.management') }}" data-ripple>
                                 <i class="fas fa-folder me-2"></i>
                                 مدیریت دسته بندی‌ها
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item material-dropdown-item {{ request()->routeIs('resident.contacts') ? 'active' : '' }}" href="{{ route('resident.contacts') }}" data-ripple>
+                                <i class="fas fa-phone-alt me-2"></i>
+                                شماره تماس اقامتگران
                             </a>
                         </li>
                     </ul>

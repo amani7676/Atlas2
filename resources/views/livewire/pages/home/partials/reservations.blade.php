@@ -43,7 +43,24 @@
                                     </span>
                                 </td>
                                 <td>{{ $data['resident']['full_name'] ?? 'N/A' }}</td>
-                                <td>{{ $data['resident']['phone'] ?? 'N/A' }}</td>
+                                <td>
+                                    @php
+                                        $phone = $data['resident']['phone'] ?? '';
+                                        $cleanPhone = preg_replace('/[^0-9]/', '', $phone);
+                                        $isValid = preg_match('/^09[0-9]{9}$/', $cleanPhone);
+                                    @endphp
+                                    @if($isValid)
+                                        <span class="text-success">
+                                            <i class="fas fa-phone me-1"></i>
+                                            {{ $phone }}
+                                        </span>
+                                    @else
+                                        <span class="text-danger text-decoration-line-through">
+                                            <i class="fas fa-exclamation-triangle me-1"></i>
+                                            {{ $phone }}
+                                        </span>
+                                    @endif
+                                </td>
                                 <td>{{ $data['contract']['payment_date'] ?? 'N/A' }}</td>
                                 <td>
                                     {!! $statusService->getStatusBadge($data['contract']['day_since_payment'] ?? 0) !!}

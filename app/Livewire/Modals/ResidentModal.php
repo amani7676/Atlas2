@@ -72,6 +72,7 @@ class ResidentModal extends Component
     {
         $rules = [
             'full_name_modal' => 'required|string|max:255',
+            'phone_modal' => 'nullable|regex:/^09[0-9]{9}$/|min:11|max:11',
             'payment_date_modal' => ['required', new PersianDate],
             'state_modal' => 'required|in:rezerve,nightly,active,leaving,exit',
         ];
@@ -90,6 +91,9 @@ class ResidentModal extends Component
 
     protected $messages = [
         'full_name_modal.required' => 'نام و نام خانوادگی الزامی است',
+        'phone_modal.regex' => 'شماره تلفن باید با 09 شروع شده و 11 رقم باشد',
+        'phone_modal.min' => 'شماره تلفن باید 11 رقم باشد',
+        'phone_modal.max' => 'شماره تلفن باید 11 رقم باشد',
         'payment_date_modal.required' => 'تاریخ پرداخت الزامی است',
         'state_modal.required' => 'وضعیت رو مشخص کنید',
     ];

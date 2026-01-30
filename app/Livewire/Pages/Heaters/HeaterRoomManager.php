@@ -242,6 +242,6 @@ class HeaterRoomManager extends Component
             'filteredHeaters' => $this->filteredHeaters->paginate(15),
             'units' => $this->units,
             'rooms' => $this->rooms,
-        ])->title("مدیریت هیترها");
+        ])->title('هیترها');
     }
 }

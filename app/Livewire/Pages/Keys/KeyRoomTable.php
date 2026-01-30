@@ -330,6 +330,6 @@ class KeyRoomTable extends Component
         $units = Unit::orderBy('name')->get();
 
         return view('livewire.pages.keys.key-room-table', compact('keys', 'units'))
-            ->title('مدیریت کلیدها');
+            ->title('کلیدها');
     }
 }

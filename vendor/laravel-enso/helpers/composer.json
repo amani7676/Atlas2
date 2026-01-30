@@ -1,0 +1,36 @@
+{
+    "name": "laravel-enso/helpers",
+    "description": "Helper classes dependency for Laravel Enso",
+    "keywords": [
+        "laravel-enso",
+        "helpers"
+    ],
+    "homepage": "https://github.com/laravel-enso/helpers",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Adrian Ocneanu",
+            "email": "aocneanu@gmail.com",
+            "homepage": "https://laravel-enso.com",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php": "^8.0",
+        "laravel/framework": "^10.0|^11.0",
+        "doctrine/dbal": "^3.3"
+    },
+    "autoload": {
+        "psr-4": {
+            "LaravelEnso\\Helpers\\": "src/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "aliases": {
+                "EnsoException": "LaravelEnso\\Helpers\\Exceptions\\EnsoException"
+            }
+        }
+    }
+}

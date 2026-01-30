@@ -158,10 +158,17 @@
                                         <input type="text"
                                                class="form-control @error('phone_modal') is-invalid @enderror"
                                                id="phone_modal" wire:model="phone_modal"
-                                               maxlength="13">
+                                               maxlength="13"
+                                               placeholder="09xxxxxxxxx">
                                         @error('phone_modal')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                         @enderror
+                                        @if($phone_modal && !preg_match('/^09[0-9]{9}$/', preg_replace('/[^0-9]/', '', $phone_modal)))
+                                            <div class="text-danger small mt-1">
+                                                <i class="fas fa-exclamation-triangle me-1"></i>
+                                                شماره تلفن نامعتبر است
+                                            </div>
+                                        @endif
                                     </div>
                                 </div>
 

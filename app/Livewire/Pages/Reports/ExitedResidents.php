@@ -29,6 +29,10 @@ class ExitedResidents extends Component
     public $name = '';
     public $nationalCode = '';
 
+    // Sorting
+    public $sortBy = 'deleted_at';
+    public $sortDirection = 'desc';
+
     // داده‌های فیلتر - باید به array تبدیل شوند
     public $units = [];
     public $rooms = [];
@@ -403,7 +407,90 @@ class ExitedResidents extends Component
             });
         }
 
+        // Apply sorting
+        $residents = $residents->sortBy(function ($data) {
+            $value = null;
+            
+            switch ($this->sortBy) {
+                case 'start_date':
+                    $value = $data['contract']['start_date'] ?? null;
+                    break;
+                case 'end_date':
+                    $value = $data['contract']['end_date'] ?? null;
+                    break;
+                case 'deleted_at':
+                    // Check both resident and contract deleted_at
+                    $value = $data['resident']['deleted_at'] ?? $data['contract']['deleted_at'] ?? null;
+                    break;
+            }
+            
+            // Convert Jalali date to timestamp for sorting
+            if ($value && $value !== '-') {
+                try {
+                    // Handle different date formats
+                    if (preg_match('/^\d{4}\/\d{1,2}\/\d{1,2}$/', $value)) {
+                        return \Morilog\Jalali\Jalalian::fromFormat('Y/m/d', $value)->toCarbon()->timestamp;
+                    }
+                } catch (\Exception $e) {
+                    // If parsing fails, return 0
+                }
+            }
+            
+            // Return a very old date for empty values so they appear at the end when sorting desc
+            return 0;
+        }, SORT_REGULAR, $this->sortDirection === 'asc' ? SORT_ASC : SORT_DESC);
+
         return $residents->values()->all();
+    }
+
+    public function sortBy($field)
+    {
+        if ($this->sortBy === $field) {
+            $this->sortDirection = $this->sortDirection === 'asc' ? 'desc' : 'asc';
+        } else {
+            $this->sortBy = $field;
+            $this->sortDirection = 'desc'; // Default to newest first
+        }
+    }
+
+    public function deleteResident($residentId)
+    {
+        try {
+            // Find the resident (including soft deleted ones)
+            $resident = \App\Models\Resident::withTrashed()->find($residentId);
+            
+            if (!$resident) {
+                $this->dispatch('show-toast', [
+                    'type' => 'error',
+                    'title' => 'خطا!',
+                    'description' => 'اقامتگر مورد نظر یافت نشد',
+                    'timer' => 3000
+                ]);
+                return;
+            }
+
+            // Get resident name for confirmation message
+            $residentName = $resident->full_name;
+
+            // Force delete the resident (permanent deletion)
+            $resident->forceDelete();
+
+            // Show success message
+            $this->dispatch('show-toast', [
+                'type' => 'success',
+                'title' => 'حذف شد!',
+                'description' => "اقامتگر {$residentName} با موفقیت حذف شد",
+                'timer' => 3000
+            ]);
+
+        } catch (\Exception $e) {
+            $this->dispatch('show-toast', [
+                'type' => 'error',
+                'title' => 'خطا!',
+                'description' => 'خطایی در حذف اقامتگر رخ داد: ' . $e->getMessage(),
+                'timer' => 3000
+            ]);
+        }
     }
 
 
@@ -414,7 +501,7 @@ class ExitedResidents extends Component
         return view('livewire.pages.reports.exited-residents', [
             'residents' => $residents,
             'noteRepository' => $this->getNoteRepository(),
-        ])->title('اقامتگران خروجی');
+        ])->title('لیست اقامتگران');
     }
 }
 

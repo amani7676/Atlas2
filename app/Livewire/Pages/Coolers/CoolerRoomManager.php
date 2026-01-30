@@ -361,6 +361,6 @@ class CoolerRoomManager extends Component
     public function render()
     {
         return view('livewire.pages.coolers.cooler-room-manager')
-            ->title("مدیریت کولرها");
+            ->title('کولرها');
     }
 }

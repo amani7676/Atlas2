@@ -68,7 +68,31 @@
                 </li>
 
                 <li class="nav-item dropdown material-dropdown">
-                    <a class="nav-link material-link dropdown-toggle {{ request()->routeIs('dormitory.builder') || request()->routeIs('coolers') || request()->routeIs('keys') || request()->routeIs('heaters') || request()->routeIs('Bed_statistic') ? 'active' : '' }}" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false" data-ripple>
+                    <a class="nav-link material-link dropdown-toggle {{ request()->routeIs('message.system') || request()->routeIs('message.sender') ? 'active' : '' }}" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false" data-ripple>
+                        <span class="material-link-icon">
+                            <i class="fas fa-envelope"></i>
+                        </span>
+                        <span class="material-link-text">پیام‌ها</span>
+                        <i class="fas fa-chevron-down dropdown-arrow ms-1"></i>
+                    </a>
+                    <ul class="dropdown-menu material-dropdown-menu">
+                        <li>
+                            <a class="dropdown-item material-dropdown-item {{ request()->routeIs('message.system') ? 'active' : '' }}" href="{{ route('message.system') }}" data-ripple>
+                                <i class="fas fa-cog me-2"></i>
+                                سیستم پیام
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item material-dropdown-item {{ request()->routeIs('message.sender') ? 'active' : '' }}" href="{{ route('message.sender') }}" data-ripple>
+                                <i class="fas fa-paper-plane me-2"></i>
+                                ارسال پیام
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+                <li class="nav-item dropdown material-dropdown">
+                    <a class="nav-link material-link dropdown-toggle {{ request()->routeIs('dormitory.builder') || request()->routeIs('coolers') || request()->routeIs('keys') || request()->routeIs('heaters') || request()->routeIs('Bed_statistic') || request()->routeIs('rules.manager') ? 'active' : '' }}" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false" data-ripple>
                         <span class="material-link-icon">
                             <i class="fas fa-ellipsis-h"></i>
                         </span>
@@ -106,9 +130,30 @@
                                 آمار تخت‌ها
                             </a>
                         </li>
+                        <li>
+                            <a class="dropdown-item material-dropdown-item {{ request()->routeIs('rules.manager') ? 'active' : '' }}" href="{{ route('rules.manager') }}" data-ripple>
+                                <i class="fas fa-gavel me-2"></i>
+                                قوانین
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item material-dropdown-item {{ request()->routeIs('category.management') ? 'active' : '' }}" href="{{ route('category.management') }}" data-ripple>
+                                <i class="fas fa-folder me-2"></i>
+                                مدیریت دسته بندی‌ها
+                            </a>
+                        </li>
                     </ul>
                 </li>
             </ul>
+
+            <!-- SMS Credit Display -->
+            <div class="material-sms-credit-container me-3">
+                <div class="d-flex align-items-center">
+                    <span class="badge bg-secondary material-sms-credit-value" id="smsCreditValue">
+                        <i class="fas fa-spinner fa-spin"></i>
+                    </span>
+                </div>
+            </div>
 
             <!-- Search Section -->
             <div class="material-search-container">
@@ -117,3 +162,60 @@
         </div>
     </div>
 </nav>
+
+<script>
+// Load SMS credit after page is completely loaded
+window.addEventListener('load', function() {
+    // Use setTimeout to ensure it doesn't block anything
+    setTimeout(function() {
+        loadSmsCredit();
+    }, 1000);
+});
+
+function loadSmsCredit() {
+    const creditValue = document.getElementById('smsCreditValue');
+    
+    // Don't load if element doesn't exist
+    if (!creditValue) return;
+    
+    fetch('/api/sms/credit', {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success && data.credit) {
+            updateSmsCreditDisplay(data.credit);
+        } else {
+            showSmsCreditError('خطا');
+        }
+    })
+    .catch(error => {
+        console.error('SMS credit load error:', error);
+        showSmsCreditError('خطا');
+    });
+}
+
+function updateSmsCreditDisplay(creditData) {
+    const creditValue = document.getElementById('smsCreditValue');
+    
+    if (!creditValue) return;
+    
+    creditValue.textContent = creditData.value;
+    creditValue.className = `badge bg-${creditData.color} material-sms-credit-value`;
+    creditValue.title = `آخرین به‌روزرسانی: ${new Date().toLocaleTimeString('fa-IR')}`;
+}
+
+function showSmsCreditError(message) {
+    const creditValue = document.getElementById('smsCreditValue');
+    
+    if (!creditValue) return;
+    
+    creditValue.textContent = message;
+    creditValue.className = 'badge bg-secondary material-sms-credit-value';
+    creditValue.title = 'خطا';
+}
+</script>

@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Events\ResidentCreated;
+use App\Observers\ResidentObserver;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -86,6 +88,11 @@ class Resident extends Model
         if ($value) {
             $this->attributes['age'] = Carbon::parse($value)->age;
         }
+    }
+
+    protected static function booted()
+    {
+        // No event dispatching needed
     }
 
 }

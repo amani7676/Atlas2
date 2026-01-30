@@ -2,9 +2,13 @@
 
 namespace App\Models;
 
+use App\Jobs\SendWelcomeMessageJob;
+use App\Models\WelcomeMessage;
+use App\Observers\ContractObserver;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Log;
 use Morilog\Jalali\Jalalian;
 
 class Contract extends Model
@@ -16,7 +20,8 @@ class Contract extends Model
         'bed_id',
         'state',
         'start_date',
-        'end_date'
+        'end_date',
+        'welcome_sent'
     ];
     protected $dates = ['deleted_at'];
 
@@ -24,6 +29,7 @@ class Contract extends Model
         'payment_date' => 'date:Y-m-d',
         'start_date' => 'date:Y-m-d',
         'end_date' => 'date:Y-m-d',
+        'welcome_sent' => 'boolean',
     ];
 
     // Relations
@@ -56,5 +62,16 @@ class Contract extends Model
         return $this->end_date
             ? Jalalian::fromDateTime($this->end_date)->format('Y/m/d')
             : null;
+    }
+
+    protected static function booted()
+    {
+        static::created(function ($contract) {
+            Log::info("Contract created: {$contract->id} for resident: {$contract->resident_id}");
+        });
+
+        static::updated(function ($contract) {
+            Log::info("Contract updated: {$contract->id} for resident: {$contract->resident_id}");
+        });
     }
 }

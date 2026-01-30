@@ -31,4 +31,9 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    'sms' => [
+        'username' => env('SMS_USERNAME'),
+        'password' => env('SMS_PASSWORD'),
+    ],
+
 ];

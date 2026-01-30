@@ -403,4 +403,46 @@
             margin: 10px 12px !important;
         }
     }
+
+    /* SMS Credit Styles */
+    .material-sms-credit-container {
+        display: flex;
+        align-items: center;
+        padding: 8px 12px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .material-sms-credit-value {
+        font-size: 13px;
+        font-weight: 600;
+        padding: 4px 8px;
+        border-radius: 6px;
+        min-width: 50px;
+        text-align: center;
+    }
+
+    /* Responsive SMS Credit */
+    @media (max-width: 991.98px) {
+        .material-sms-credit-container {
+            margin: 8px 16px;
+            padding: 12px 16px;
+            background: rgba(0, 0, 0, 0.03);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+    }
+
+    @media (max-width: 480px) {
+        .material-sms-credit-container {
+            margin: 8px 12px;
+            padding: 14px 16px;
+        }
+
+        .material-sms-credit-value {
+            font-size: 15px;
+            padding: 6px 10px;
+            min-width: 60px;
+        }
+    }
 </style>

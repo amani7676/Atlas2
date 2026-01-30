@@ -387,6 +387,9 @@ class ResidentModal extends Component
                     : ($this->state_modal === 'rezerve' ? 'rezerve' : null)
             ]);
 
+        // ارسال خودکار پیام خوشامدگویی برای اقامتگر جدید
+        $this->sendWelcomeMessageToNewResident($resident, $contract);
+
         $this->dispatch('show-toast', [
             'type' => 'success',
             'title' => 'موفقیت!',
@@ -434,6 +437,11 @@ class ResidentModal extends Component
                         ? 'full'
                         : ($this->state_modal === 'rezerve' ? 'rezerve' : null)
                 ]);
+
+            // بررسی ارسال پیام خوشامدگویی در حالت ویرایش (فقط اگر فعال شده و قبلاً ارسال نشده)
+            if ($contract->state === 'active' && !$contract->welcome_sent) {
+                $this->sendWelcomeMessageToNewResident($resident, $contract);
+            }
 
             $this->dispatch('show-toast', [
                 'type' => 'success',
@@ -498,5 +506,189 @@ class ResidentModal extends Component
     public function render()
     {
         return view('livewire.modals.resident-modal');
+    }
+
+    /**
+     * ارسال خودکار پیام خوشامدگویی برای اقامتگر جدید
+     */
+    private function sendWelcomeMessageToNewResident($resident, $contract)
+    {
+        try {
+            // فقط برای قراردادهای فعال ارسال شود
+            if ($contract->state !== 'active') {
+                \Illuminate\Support\Facades\Log::info("Contract {$contract->id} is not active (state: {$contract->state}), skipping welcome message");
+                return;
+            }
+
+            // بررسی اینکه قبلاً پیام ارسال نشده باشد
+            if ($contract->welcome_sent) {
+                \Illuminate\Support\Facades\Log::info("Welcome message already sent for contract {$contract->id}");
+                return;
+            }
+
+            // بررسی وجود پیام خوشامدگویی فعال
+            $welcomeMessage = \App\Models\WelcomeMessage::where('is_active', true)->first();
+            if (!$welcomeMessage) {
+                \Illuminate\Support\Facades\Log::info("No active welcome message found");
+                return;
+            }
+
+            // بررسی تاریخ اقامتگر نسبت به تاریخ پیام
+            if (!$resident->created_at->gte($welcomeMessage->send_date)) {
+                \Illuminate\Support\Facades\Log::info("Resident created before welcome message date, skipping");
+                return;
+            }
+
+            // بررسی وجود قالب پیام فعال
+            $template = \App\Models\MessageTemplate::where('body_id', $welcomeMessage->body_id)
+                ->where('body_status', 1)
+                ->first();
+                
+            if (!$template) {
+                \Illuminate\Support\Facades\Log::info("No active template found for body_id: {$welcomeMessage->body_id}");
+                return;
+            }
+
+            // بررسی وجود API key فعال
+            $apiKey = \App\Models\ApiKey::where('is_active', true)->first();
+            if (!$apiKey) {
+                \Illuminate\Support\Facades\Log::info("No active API key found");
+                return;
+            }
+
+            \Illuminate\Support\Facades\Log::info("=== SENDING WELCOME MESSAGE TO NEW RESIDENT ===");
+            \Illuminate\Support\Facades\Log::info("Resident: {$resident->full_name}");
+            \Illuminate\Support\Facades\Log::info("Phone: {$resident->phone}");
+            \Illuminate\Support\Facades\Log::info("Contract ID: {$contract->id}");
+            \Illuminate\Support\Facades\Log::info("Body ID: {$welcomeMessage->body_id}");
+
+            // دریافت متغیرها و ساخت آرایه متن
+            $variables = \App\Models\MessageVariable::where('is_active', true)->orderBy('id')->get();
+            $textArray = [];
+            
+            foreach ($variables as $variable) {
+                $value = $this->getVariableValueForResident($variable->field_name, $resident);
+                $textArray[] = $value;
+            }
+
+            \Illuminate\Support\Facades\Log::info("Text Array: " . json_encode($textArray, JSON_UNESCAPED_UNICODE));
+
+            // ارسال پیام با استفاده از همان متد MessageSender
+            $messageSender = new \App\Livewire\MessageSender();
+            $result = $messageSender->sendSmsViaPayamak($apiKey, $textArray, $resident->phone, $welcomeMessage->body_id, $contract);
+
+            // بررسی نتیجه
+            if (is_numeric($result) && $result > 0) {
+                \Illuminate\Support\Facades\Log::info("✅ Welcome message sent successfully to {$resident->full_name}, RecId: {$result}");
+                
+                // نمایش پیام موفقیت به کاربر
+                $this->dispatch('show-toast', [
+                    'type' => 'info',
+                    'title' => 'پیام خوشامدگویی!',
+                    'description' => "پیام خوشامدگویی برای {$resident->full_name} با موفقیت ارسال شد (کد پیگیری: {$result})",
+                    'timer' => 5000
+                ]);
+                
+            } else {
+                \Illuminate\Support\Facades\Log::error("❌ Welcome message sending failed for {$resident->full_name}: {$result}");
+                
+                // نمایش پیام خطا به کاربر
+                $this->dispatch('show-toast', [
+                    'type' => 'warning',
+                    'title' => 'خطا در ارسال پیام!',
+                    'description' => "خطا در ارسال پیام خوشامدگویی برای {$resident->full_name}: {$result}",
+                    'timer' => 5000
+                ]);
+            }
+
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Error in sendWelcomeMessageToNewResident: ' . $e->getMessage());
+            
+            $this->dispatch('show-toast', [
+                'type' => 'error',
+                'title' => 'خطا در ارسال پیام!',
+                'description' => "خطا در ارسال پیام خوشامدگویی: " . $e->getMessage(),
+                'timer' => 5000
+            ]);
+        }
+    }
+
+    /**
+     * دریافت مقدار متغیر برای اقامتگر (با تبدیل تاریخ به شمسی)
+     */
+    private function getVariableValueForResident($fieldName, $resident)
+    {
+        try {
+            switch ($fieldName) {
+                case 'residents.full_name':
+                    return $resident->full_name ?? 'نامشخص';
+                    
+                case 'contracts.payment_date':
+                    $contract = \App\Models\Contract::where('resident_id', $resident->id)
+                        ->where('state', 'active')
+                        ->first();
+                    if ($contract && $contract->payment_date) {
+                        try {
+                            return \Morilog\Jalali\Jalalian::fromDateTime($contract->payment_date)->format('Y/m/d');
+                        } catch (\Exception $e) {
+                            return $contract->payment_date;
+                        }
+                    }
+                    return 'نامشخص';
+                    
+                case 'contracts.start_date':
+                    $contract = \App\Models\Contract::where('resident_id', $resident->id)
+                        ->where('state', 'active')
+                        ->first();
+                    if ($contract && $contract->start_date) {
+                        try {
+                            return \Morilog\Jalali\Jalalian::fromDateTime($contract->start_date)->format('Y/m/d');
+                        } catch (\Exception $e) {
+                            return $contract->start_date;
+                        }
+                    }
+                    return 'نامشخص';
+                    
+                case 'contracts.end_date':
+                    $contract = \App\Models\Contract::where('resident_id', $resident->id)
+                        ->where('state', 'active')
+                        ->first();
+                    if ($contract && $contract->end_date) {
+                        try {
+                            return \Morilog\Jalali\Jalalian::fromDateTime($contract->end_date)->format('Y/m/d');
+                        } catch (\Exception $e) {
+                            return $contract->end_date;
+                        }
+                    }
+                    return 'نامشخص';
+                    
+                case 'rooms.name':
+                    $contract = \App\Models\Contract::where('resident_id', $resident->id)
+                        ->where('state', 'active')
+                        ->with(['bed.room'])
+                        ->first();
+                    return $contract && $contract->bed && $contract->bed->room 
+                        ? $contract->bed->room->name 
+                        : 'نامشخص';
+                        
+                case 'beds.name':
+                    $contract = \App\Models\Contract::where('resident_id', $resident->id)
+                        ->where('state', 'active')
+                        ->with('bed')
+                        ->first();
+                    return $contract && $contract->bed 
+                        ? $contract->bed->name 
+                        : 'نامشخص';
+                    
+                default:
+                    if ($resident && isset($resident->{$fieldName})) {
+                        return $resident->{$fieldName};
+                    }
+            }
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::warning('Variable not found: ' . $fieldName . ' Error: ' . $e->getMessage());
+        }
+        
+        return '{' . $fieldName . '}';
     }
 }

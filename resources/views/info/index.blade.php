@@ -5,16 +5,27 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>قوانین و مقررات</title>
     
-    <!-- Material Icons -->
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700&display=swap" rel="stylesheet">
-    
     <style>
+        /* Inline Font Definition */
+        @font-face {
+            font-family: 'Vazirmatn';
+            font-style: normal;
+            font-weight: 300;
+            src: local('Vazirmatn'), local('Vazirmatn-Regular');
+        }
+        
+        /* Fallback fonts */
+        body {
+            font-family: 'Vazirmatn', 'Tahoma', 'Arial', sans-serif;
+        }
+        
+        /* Icon styles using Unicode symbols */
+        .icon-gavel::before { content: "⚖️"; }
+        .icon-folder::before { content: "📁"; }
+        .icon-list::before { content: "📋"; }
+        .icon-schedule::before { content: "🕐"; }
+        .icon-search::before { content: "🔍"; }
+        
         * {
             margin: 0;
             padding: 0;
@@ -22,7 +33,7 @@
         }
 
         body {
-            font-family: 'Vazirmatn', sans-serif;
+            font-family: 'Vazirmatn', 'Tahoma', 'Arial', sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             padding: 20px;
@@ -162,12 +173,6 @@
             color: white;
         }
 
-        .empty-state .material-icons {
-            font-size: 64px;
-            margin-bottom: 20px;
-            opacity: 0.7;
-        }
-
         .empty-state h3 {
             font-size: 1.5rem;
             margin-bottom: 10px;
@@ -275,7 +280,8 @@
             color: white;
         }
 
-        .loading .material-icons {
+        .loading::after {
+            content: "⏳";
             font-size: 48px;
             animation: spin 2s linear infinite;
         }
@@ -315,7 +321,7 @@
         <!-- Header -->
         <header class="header">
             <h1>
-                <span class="material-icons" style="vertical-align: middle; margin-left: 10px;">gavel</span>
+                <span class="icon-gavel" style="vertical-align: middle; margin-left: 10px;"></span>
                 قوانین و مقررات
             </h1>
             <p>قوانین و مقررات خوابگاه با ترتیب دسته بندی شده</p>
@@ -325,7 +331,7 @@
         <div class="search-section" style="background: white; border-radius: 12px; padding: 20px; margin-bottom: 30px; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
             <div class="rules-titles-list">
                 <h6 style="margin-bottom: 15px; color: #333; font-weight: 600;">
-                    <span class="material-icons" style="vertical-align: middle; margin-left: 5px; font-size: 20px;">list</span>
+                    <span class="icon-list" style="vertical-align: middle; margin-left: 5px; font-size: 20px;"></span>
                     لیست سریع قوانین
                 </h6>
                 <div id="rulesList" style="display: flex; flex-wrap: wrap; gap: 8px;">
@@ -371,7 +377,7 @@
                 @endforeach
             @else
                 <div class="empty-state">
-                    <span class="material-icons">folder_open</span>
+                    <span class="icon-folder" style="font-size: 64px;"></span>
                     <h3>هیچ قانونی یافت نشد</h3>
                     <p>در حال حاضر قانونی برای نمایش وجود ندارد</p>
                 </div>
@@ -382,7 +388,7 @@
         <footer class="footer">
             <p>&copy; {{ date('Y') }} - تمام حقوق محفوظ است</p>
             <p style="font-size: 0.9rem; margin-top: 5px;">
-                <span class="material-icons" style="font-size: 16px; vertical-align: middle;">schedule</span>
+                <span class="icon-schedule" style="font-size: 16px; vertical-align: middle;"></span>
                 آخرین به‌روزرسانی: {{ \Carbon\Carbon::now()->format('Y/m/d H:i') }}
             </p>
         </footer>

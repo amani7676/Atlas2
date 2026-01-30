@@ -6,6 +6,7 @@
   <component name="ChangeListManager">
     <list default="true" id="b63ed7f2-ad38-4f28-9051-fd2d4dc37390" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/Livewire/Modals/ResidentModal.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/Livewire/Modals/ResidentModal.php" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/Livewire/Pages/BedStatistics/BedStatistics.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/Livewire/Pages/BedStatistics/BedStatistics.php" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/Livewire/Pages/Coolers/CoolerRoomManager.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/Livewire/Pages/Coolers/CoolerRoomManager.php" afterDir="false" />
@@ -234,7 +235,7 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1769762059084</updated>
-      <workItem from="1769762060716" duration="2513000" />
+      <workItem from="1769762060716" duration="5882000" />
     </task>
     <servers />
   </component>

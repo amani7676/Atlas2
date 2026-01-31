@@ -96,9 +96,11 @@
                                                         <td></td>
                                                         <td class="text-center">
                                                             <button wire:click="openAddModal('{{ $bed['bed']['name'] }}', '{{ $roomData['room']['name'] }}')"
-                                                                    class="btn btn-sm {{ $isHighlighted ? 'btn-warning' : 'btn-outline-success' }} add-resident-btn"
-                                                                    title="افزودن ساکن">
-                                                                <i class="fas fa-user-plus"></i>
+                                                                    class="btn btn-sm {{ $isHighlighted ? 'btn-warning' : 'btn-outline-success' }} add-resident-btn fast-action-btn"
+                                                                    title="افزودن ساکن"
+                                                                    onclick="this.classList.add('loading')">
+                                                                <i class="action-icon fas fa-user-plus"></i>
+                                                                <i class="action-spinner fas fa-spinner fa-spin" style="display: none;"></i>
                                                             </button>
                                                         </td>
                                                     </tr>
@@ -202,25 +204,21 @@
                                                             </button>
 
                                                             <button wire:click="editResident({{ $resident['id'] }})"
-                                                                    wire:loading.attr="disabled"
-                                                                    wire:target="editResident({{ $resident['id'] }})"
-                                                                    class="btn btn-sm me-1" style="background: #FFBBCC"
-                                                                    title="ویرایش">
-                                                                <i wire:loading wire:target="editResident({{ $resident['id'] }})" 
-                                                                   class="fas fa-spinner fa-spin"></i>
-                                                                <i wire:loading.remove wire:target="editResident({{ $resident['id'] }})" 
-                                                                   class="fas fa-eye"></i>
+                                                                    class="btn btn-sm me-1 fast-action-btn" 
+                                                                    style="background: #FFBBCC"
+                                                                    title="ویرایش"
+                                                                    onclick="this.classList.add('loading')">
+                                                                <i class="action-icon fas fa-eye"></i>
+                                                                <i class="action-spinner fas fa-spinner fa-spin" style="display: none;"></i>
                                                             </button>
 
                                                             <button wire:click="detailsChange({{ $resident['id'] }})"
-                                                                    wire:loading.attr="disabled"
-                                                                    wire:target="detailsChange({{ $resident['id'] }})"
-                                                                    class="btn btn-sm me-1"
-                                                                    style="background: #BC6FF1; color: white;">
-                                                                <i wire:loading wire:target="detailsChange({{ $resident['id'] }})" 
-                                                                   class="fas fa-spinner fa-spin"></i>
-                                                                <i wire:loading.remove wire:target="detailsChange({{ $resident['id'] }})" 
-                                                                   class="fas fa-gear"></i>
+                                                                    class="btn btn-sm me-1 fast-action-btn"
+                                                                    style="background: #BC6FF1; color: white;"
+                                                                    title="تغییرات جزییات"
+                                                                    onclick="this.classList.add('loading')">
+                                                                <i class="action-icon fas fa-gear"></i>
+                                                                <i class="action-spinner fas fa-spinner fa-spin" style="display: none;"></i>
                                                             </button>
 
                                                         </td>
@@ -290,6 +288,43 @@
             }, 300); // 300ms delay for debouncing
 
             document.addEventListener('input', debouncedPhoneHandler);
+
+            // Fast Action Buttons - Instant Feedback
+            document.addEventListener('DOMContentLoaded', function() {
+                // Handle all fast action buttons
+                const fastButtons = document.querySelectorAll('.fast-action-btn');
+                
+                fastButtons.forEach(button => {
+                    button.addEventListener('click', function(e) {
+                        // Add loading state immediately
+                        this.classList.add('loading');
+                        
+                        // Remove loading after 3 seconds (fallback)
+                        setTimeout(() => {
+                            this.classList.remove('loading');
+                        }, 3000);
+                    });
+                });
+                
+                // Listen for Livewire updates to remove loading states
+                if (window.Livewire) {
+                    window.Livewire.on('modalOpened', () => {
+                        // Remove loading states when modal opens
+                        document.querySelectorAll('.fast-action-btn.loading').forEach(btn => {
+                            btn.classList.remove('loading');
+                        });
+                    });
+                    
+                    window.Livewire.on('show-toast', () => {
+                        // Remove loading states when toast shows (operation completed)
+                        setTimeout(() => {
+                            document.querySelectorAll('.fast-action-btn.loading').forEach(btn => {
+                                btn.classList.remove('loading');
+                            });
+                        }, 500);
+                    });
+                }
+            });
 
             // Auto-scroll to highlighted room using hash
             setTimeout(() => {
@@ -699,6 +734,74 @@
             0% { transform: scale(1); }
             50% { transform: scale(1.02); }
             100% { transform: scale(1); }
+        }
+
+        /* Fast Action Buttons */
+        .fast-action-btn {
+            position: relative;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .fast-action-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        .fast-action-btn:active {
+            transform: translateY(0);
+        }
+
+        .fast-action-btn.loading {
+            pointer-events: none;
+            opacity: 0.7;
+        }
+
+        .fast-action-btn.loading .action-icon {
+            display: none;
+        }
+
+        .fast-action-btn.loading .action-spinner {
+            display: inline-block !important;
+        }
+
+        .action-icon {
+            transition: opacity 0.2s ease;
+        }
+
+        .action-spinner {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        /* Special styling for Add Resident button */
+        .add-resident-btn {
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .add-resident-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+        }
+
+        .add-resident-btn.btn-warning:hover {
+            box-shadow: 0 4px 12px rgba(255, 193, 7, 0.4);
+        }
+
+        .add-resident-btn.loading {
+            transform: scale(0.95);
+            opacity: 0.8;
+        }
+
+        .add-resident-btn.loading .action-icon {
+            display: none;
+        }
+
+        .add-resident-btn.loading .action-spinner {
+            display: inline-block !important;
         }
     </style>
 </div>

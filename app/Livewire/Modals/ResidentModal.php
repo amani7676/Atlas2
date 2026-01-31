@@ -220,13 +220,11 @@ class ResidentModal extends Component
 
         // Optimize with eager loading to prevent N+1 queries
         $resident = Resident::with([
-            'contract' => function ($query) {
-                $query->latest()->with('bed.room');
-            }
+            'contract.bed.room'
         ])->find($residentId);
 
         if ($resident) {
-            $contract = $resident->contract->first();
+            $contract = $resident->contract; // Remove ->first() since hasOne returns single object
 
             if ($contract && $contract->bed) {
                 $this->selectedBed = [
@@ -261,6 +259,9 @@ class ResidentModal extends Component
             if ($contract) {
                 $this->payment_date_modal = $this->toJalali($contract->payment_date) ?? '';
                 $this->state_modal = $contract->state ?? '';
+            } else {
+                $this->payment_date_modal = '';
+                $this->state_modal = '';
             }
 
             $this->showModal = true;

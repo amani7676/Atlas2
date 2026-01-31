@@ -154,8 +154,9 @@
 
             <!-- SMS Credit Display -->
             <div class="material-sms-credit-container me-3">
-                <div class="d-flex align-items-center">
-                    <span class="badge bg-secondary material-sms-credit-value" id="smsCreditValue">
+                <div class="sms-credit-circle" id="smsCreditValue" onclick="loadSmsCredit()" title="اعتبار پیامک - کلیک برای تازه‌سازی">
+                    <i class="fas fa-sms"></i>
+                    <span class="sms-credit-number">
                         <i class="fas fa-spinner fa-spin"></i>
                     </span>
                 </div>
@@ -169,6 +170,118 @@
     </div>
 </nav>
 
+<style>
+/* Simple Circular SMS Credit */
+.material-sms-credit-container {
+    position: relative;
+}
+
+.sms-credit-circle {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 10px rgba(102, 126, 234, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.sms-credit-circle:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.5);
+}
+
+.sms-credit-circle:active {
+    transform: scale(0.95);
+}
+
+.sms-credit-circle i.fa-sms {
+    font-size: 16px;
+    margin-bottom: 2px;
+    opacity: 0.9;
+}
+
+.sms-credit-number {
+    font-size: 11px;
+    font-weight: bold;
+    line-height: 1;
+}
+
+.sms-credit-circle.bg-success {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%) !important;
+    box-shadow: 0 2px 10px rgba(40, 167, 69, 0.3);
+}
+
+.sms-credit-circle.bg-warning {
+    background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%) !important;
+    box-shadow: 0 2px 10px rgba(255, 193, 7, 0.3);
+}
+
+.sms-credit-circle.bg-danger {
+    background: linear-gradient(135deg, #dc3545 0%, #e83e8c 100%) !important;
+    box-shadow: 0 2px 10px rgba(220, 53, 69, 0.3);
+}
+
+.sms-credit-circle.bg-secondary {
+    background: linear-gradient(135deg, #6c757d 0%, #495057 100%) !important;
+    box-shadow: 0 2px 10px rgba(108, 117, 125, 0.3);
+}
+
+/* Loading animation */
+.sms-credit-circle .fa-spinner {
+    font-size: 10px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .sms-credit-circle {
+        width: 45px;
+        height: 45px;
+    }
+    
+    .sms-credit-circle i.fa-sms {
+        font-size: 14px;
+    }
+    
+    .sms-credit-number {
+        font-size: 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    .sms-credit-circle {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .sms-credit-circle i.fa-sms {
+        font-size: 12px;
+        margin-bottom: 1px;
+    }
+    
+    .sms-credit-number {
+        font-size: 9px;
+    }
+}
+
+/* Rotation animation for loading */
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.sms-credit-circle.loading {
+    animation: spin 1s linear infinite;
+}
+</style>
+
 <script>
 // Load SMS credit after page is completely loaded
 window.addEventListener('load', function() {
@@ -179,10 +292,19 @@ window.addEventListener('load', function() {
 });
 
 function loadSmsCredit() {
-    const creditValue = document.getElementById('smsCreditValue');
+    const creditCircle = document.getElementById('smsCreditValue');
     
     // Don't load if element doesn't exist
-    if (!creditValue) return;
+    if (!creditCircle) return;
+    
+    // Add loading animation
+    creditCircle.classList.add('loading');
+    creditCircle.style.pointerEvents = 'none';
+    
+    // Show loading state
+    creditCircle.innerHTML = '<i class="fas fa-sms"></i><span class="sms-credit-number"><i class="fas fa-spinner fa-spin"></i></span>';
+    creditCircle.className = 'sms-credit-circle bg-secondary loading';
+    creditCircle.title = 'در حال بارگذاری...';
     
     fetch('/api/sms/credit', {
         method: 'GET',
@@ -193,6 +315,12 @@ function loadSmsCredit() {
     })
     .then(response => response.json())
     .then(data => {
+        const creditCircle = document.getElementById('smsCreditValue');
+        if (creditCircle) {
+            creditCircle.classList.remove('loading');
+            creditCircle.style.pointerEvents = 'auto';
+        }
+        
         if (data.success && data.credit) {
             updateSmsCreditDisplay(data.credit);
         } else {
@@ -200,28 +328,34 @@ function loadSmsCredit() {
         }
     })
     .catch(error => {
+        const creditCircle = document.getElementById('smsCreditValue');
+        if (creditCircle) {
+            creditCircle.classList.remove('loading');
+            creditCircle.style.pointerEvents = 'auto';
+        }
+        
         console.error('SMS credit load error:', error);
         showSmsCreditError('خطا');
     });
 }
 
 function updateSmsCreditDisplay(creditData) {
-    const creditValue = document.getElementById('smsCreditValue');
+    const creditCircle = document.getElementById('smsCreditValue');
     
-    if (!creditValue) return;
+    if (!creditCircle) return;
     
-    creditValue.textContent = creditData.value;
-    creditValue.className = `badge bg-${creditData.color} material-sms-credit-value`;
-    creditValue.title = `آخرین به‌روزرسانی: ${new Date().toLocaleTimeString('fa-IR')}`;
+    creditCircle.innerHTML = `<i class="fas fa-sms"></i><span class="sms-credit-number">${creditData.value}</span>`;
+    creditCircle.className = `sms-credit-circle bg-${creditData.color}`;
+    creditCircle.title = `اعتبار پیامک: ${creditData.value} - آخرین به‌روزرسانی: ${new Date().toLocaleTimeString('fa-IR')}`;
 }
 
 function showSmsCreditError(message) {
-    const creditValue = document.getElementById('smsCreditValue');
+    const creditCircle = document.getElementById('smsCreditValue');
     
-    if (!creditValue) return;
+    if (!creditCircle) return;
     
-    creditValue.textContent = message;
-    creditValue.className = 'badge bg-secondary material-sms-credit-value';
-    creditValue.title = 'خطا';
+    creditCircle.innerHTML = `<i class="fas fa-sms"></i><span class="sms-credit-number">${message}</span>`;
+    creditCircle.className = 'sms-credit-circle bg-secondary';
+    creditCircle.title = 'خطا در بارگذاری اعتبار پیامک';
 }
 </script>

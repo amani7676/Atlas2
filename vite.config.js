@@ -12,7 +12,7 @@ export default defineConfig({
         rollupOptions: {
             output: {
                 manualChunks: {
-                    'tinymce': ['tinymce/tinymce']
+
                 }
             }
         }

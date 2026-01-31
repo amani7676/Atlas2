@@ -218,12 +218,15 @@ class ResidentModal extends Component
         $this->modalMode = 'edit';
         $this->editingResidentId = $residentId;
 
-        $resident = Resident::with(['contract' => function ($query) {
-            $query->latest()->first();
-        }, 'contract.bed.room'])->find($residentId);
+        // Optimize with eager loading to prevent N+1 queries
+        $resident = Resident::with([
+            'contract' => function ($query) {
+                $query->latest()->with('bed.room');
+            }
+        ])->find($residentId);
 
         if ($resident) {
-            $contract = $resident->contract;
+            $contract = $resident->contract->first();
 
             if ($contract && $contract->bed) {
                 $this->selectedBed = [
@@ -402,6 +405,9 @@ class ResidentModal extends Component
         ]);
 
         $this->dispatch('residentAdded');
+        
+        // Clear cache to ensure fresh data
+        \App\Services\Report\AllReportService::clearAllCache();
     }
 
     private function updateExistingResident(): void
@@ -455,6 +461,9 @@ class ResidentModal extends Component
             ]);
 
             $this->dispatch('residentAdded');
+        
+        // Clear cache to ensure fresh data
+        \App\Services\Report\AllReportService::clearAllCache();
         }
     }
 

@@ -1,4 +1,4 @@
-<div class="resident-management">
+<div class="resident-management" wire:init="loadResidentData">
     @foreach ($this->allReportService()->getUnitWithDependence() as $data)
         @php
             $colorClass = $this->getColorClass($data['unit']['id']);
@@ -186,25 +186,38 @@
 
                                                         <td class="action-buttons position-relative">
                                                             <!-- سایر دکمه‌ها -->
-                                                            <a wire:click="editResidentInline({{ $resident['id'] }})"
-                                                               class="btn btn-sm me-1" style="background: #609966"
-                                                               title="ذخیره تغییرات">
-                                                                <i class="fas fa-circle-check"
-                                                                   style="color: #ffffff;"></i>
-                                                            </a>
+                                                            <button wire:click="editResidentInline({{ $resident['id'] }})"
+                                                                    wire:loading.attr="disabled"
+                                                                    wire:target="editResidentInline({{ $resident['id'] }})"
+                                                                    class="btn btn-sm me-1" style="background: #609966"
+                                                                    title="ذخیره تغییرات">
+                                                                <i wire:loading wire:target="editResidentInline({{ $resident['id'] }})" 
+                                                                   class="fas fa-spinner fa-spin"></i>
+                                                                <i wire:loading.remove wire:target="editResidentInline({{ $resident['id'] }})" 
+                                                                   class="fas fa-circle-check" style="color: #ffffff;"></i>
+                                                            </button>
 
-                                                            <a wire:click="editResident({{ $resident['id'] }})"
-                                                               class="btn btn-sm me-1" style="background: #FFBBCC"
-                                                               title="ویرایش">
-                                                                <i class="fas fa-eye"></i>
-                                                            </a>
+                                                            <button wire:click="editResident({{ $resident['id'] }})"
+                                                                    wire:loading.attr="disabled"
+                                                                    wire:target="editResident({{ $resident['id'] }})"
+                                                                    class="btn btn-sm me-1" style="background: #FFBBCC"
+                                                                    title="ویرایش">
+                                                                <i wire:loading wire:target="editResident({{ $resident['id'] }})" 
+                                                                   class="fas fa-spinner fa-spin"></i>
+                                                                <i wire:loading.remove wire:target="editResident({{ $resident['id'] }})" 
+                                                                   class="fas fa-eye"></i>
+                                                            </button>
 
-                                                            <a class="btn btn-sm me-1"
-                                                               wire:click="detailsChange({{ $resident['id']}})"
-                                                               style="background: #BC6FF1; color: white;">
-                                                                <i class="fas fa-gear"></i>
-
-                                                            </a>
+                                                            <button wire:click="detailsChange({{ $resident['id'] }})"
+                                                                    wire:loading.attr="disabled"
+                                                                    wire:target="detailsChange({{ $resident['id'] }})"
+                                                                    class="btn btn-sm me-1"
+                                                                    style="background: #BC6FF1; color: white;">
+                                                                <i wire:loading wire:target="detailsChange({{ $resident['id'] }})" 
+                                                                   class="fas fa-spinner fa-spin"></i>
+                                                                <i wire:loading.remove wire:target="detailsChange({{ $resident['id'] }})" 
+                                                                   class="fas fa-gear"></i>
+                                                            </button>
 
                                                         </td>
                                                     </tr>

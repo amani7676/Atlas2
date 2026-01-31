@@ -55,6 +55,23 @@ class AllReportService
         }
     }
 
+    /**
+     * پاک کردن cache مربوط به units و residents
+     */
+    public static function clearAllCache(): void
+    {
+        try {
+            // Clear specific cache keys
+            \Cache::forget('units_with_dependence');
+            
+            // Clear residents cache
+            self::clearResidentsCache();
+        } catch (\Exception $e) {
+            // Fallback to clearing all cache
+            \Cache::flush();
+        }
+    }
+
     public function getAllResidentsWithDetails($sortBy = 'contract.day_since_payment', $sortDirection = 'desc')
     {
         // Cache key based on sort parameters
@@ -210,86 +227,94 @@ class AllReportService
 
     public function getUnitWithDependence()
     {
-        return Unit::with([
-            'rooms' => function ($query) {
-                $query->where('type', 'room') // Add this to filter rooms by type
-                ->orderBy('name', 'desc')
-                    ->with([
-                        'beds' => function ($bedQuery) {
-                            $bedQuery->with([
-                                'contracts' => function ($contractQuery) {
-                                    $contractQuery->with('resident.notes');
-                                }
-                            ]);
-                        }
-                    ]);
-            }
-        ])
-            ->orderByDesc('code') // تغییر اصلی اینجا - مرتب سازی نزولی بر اساس کد
-            ->get()->map(function ($unit) {
-                return [
-                    'unit' => [
-                        'id' => $unit->id,
-                        'name' => $unit->name,
-                        'code' => $unit->code,
-                        'desc' => $unit->desc,
-                        'color' => $unit->color ?? '#667eea',
-                    ],
-                    'rooms' => $unit->rooms->map(function ($room) {
-                        return [
-                            'room' => [
-                                'id' => $room->id,
-                                'name' => $room->name,
-                                'bed_count' => $room->bed_count,
-                                'desc' => $room->desc,
-                                'color' => $room->color ?? '#f093fb',
-                            ],
-                            'beds' => $room->beds->map(function ($bed) {
-                                return [
-                                    'bed' => [
-                                        'id' => $bed->id,
-                                        'name' => $bed->name,
-                                        'state_ratio_resident' => $bed->state_ratio_resident,
-                                        'state' => $bed->state,
-                                        'desc' => $bed->desc,
-                                    ],
-                                    'contracts' => $bed->contracts->map(function ($contract) {
-                                        return [
-                                            'contract' => [
-                                                'id' => $contract->id,
-                                                'payment_date' => $contract->payment_date_jalali,
-                                                'day_since_payment' => $this->getDaysSincePayment($contract->payment_date),
-                                                'start_date' => $contract->start_date_jalali,
-                                                'end_date' => $contract->end_date_jalali,
-                                                'state' => $contract->state,
-                                            ],
-                                            'resident' => $contract->resident ? [
-                                                'id' => $contract->resident->id,
-                                                'full_name' => $contract->resident->full_name,
-                                                'phone' => $contract->resident->formatted_phone,
-                                                'age' => $contract->resident->age,
-                                                'job' => $contract->resident->job,
-                                                'referral_source' => $contract->resident->referral_source,
-                                                'document' => $contract->resident->document,
-                                                'form' => $contract->resident->form,
-                                                'rent' => $contract->resident->rent,
-                                                'trust' => $contract->resident->trust,
-                                            ] : null,
-                                            'notes' => $contract->resident?->notes->map(function ($note) {
-                                                    return [
-                                                        'id' => $note->id,
-                                                        'type' => $note->type,
-                                                        'note' => $note->note,
-                                                        'created_at' => $note->created_at,
-                                                    ];
-                                                }) ?? collect(),
-                                        ];
-                                    }),
-                                ];
-                            }),
-                        ];
-                    }),
-                ];
-            });
+        // Cache key for units data
+        $cacheKey = 'units_with_dependence';
+        
+        // Cache for 30 minutes in production, 1 minute in development
+        $cacheTime = app()->environment('production') ? 30 : 1;
+        
+        return \Cache::remember($cacheKey, $cacheTime, function () {
+            return Unit::with([
+                'rooms' => function ($query) {
+                    $query->where('type', 'room') // Add this to filter rooms by type
+                    ->orderBy('name', 'desc')
+                        ->with([
+                            'beds' => function ($bedQuery) {
+                                $bedQuery->with([
+                                    'contracts' => function ($contractQuery) {
+                                        $contractQuery->with('resident.notes');
+                                    }
+                                ]);
+                            }
+                        ]);
+                }
+            ])
+                ->orderByDesc('code') // تغییر اصلی اینجا - مرتب سازی نزولی بر اساس کد
+                ->get()->map(function ($unit) {
+                    return [
+                        'unit' => [
+                            'id' => $unit->id,
+                            'name' => $unit->name,
+                            'code' => $unit->code,
+                            'desc' => $unit->desc,
+                            'color' => $unit->color ?? '#667eea',
+                        ],
+                        'rooms' => $unit->rooms->map(function ($room) {
+                            return [
+                                'room' => [
+                                    'id' => $room->id,
+                                    'name' => $room->name,
+                                    'bed_count' => $room->bed_count,
+                                    'desc' => $room->desc,
+                                    'color' => $room->color ?? '#f093fb',
+                                ],
+                                'beds' => $room->beds->map(function ($bed) {
+                                    return [
+                                        'bed' => [
+                                            'id' => $bed->id,
+                                            'name' => $bed->name,
+                                            'state_ratio_resident' => $bed->state_ratio_resident,
+                                            'state' => $bed->state,
+                                            'desc' => $bed->desc,
+                                        ],
+                                        'contracts' => $bed->contracts->map(function ($contract) {
+                                            return [
+                                                'contract' => [
+                                                    'id' => $contract->id,
+                                                    'payment_date' => $contract->payment_date_jalali,
+                                                    'day_since_payment' => $this->getDaysSincePayment($contract->payment_date),
+                                                    'start_date' => $contract->start_date_jalali,
+                                                    'end_date' => $contract->end_date_jalali,
+                                                    'state' => $contract->state,
+                                                ],
+                                                'resident' => $contract->resident ? [
+                                                    'id' => $contract->resident->id,
+                                                    'full_name' => $contract->resident->full_name,
+                                                    'phone' => $contract->resident->formatted_phone,
+                                                    'age' => $contract->resident->age,
+                                                    'job' => $contract->resident->job,
+                                                    'referral_source' => $contract->resident->referral_source,
+                                                    'document' => $contract->resident->document,
+                                                    'form' => $contract->resident->form,
+                                                    'rent' => $contract->resident->rent,
+                                                    'trust' => $contract->resident->trust,
+                                                ] : null,
+                                                'notes' => $contract->resident?->notes->map(function ($note) {
+                                                        return [
+                                                            'id' => $note->id,
+                                                            'type' => $note->type,
+                                                            'note' => $note->note,
+                                                            'created_at' => $note->created_at,
+                                                        ];
+                                                    }) ?? collect(),
+                                            ];
+                                        }),
+                                    ];
+                                }),
+                            ];
+                        }),
+                    ];
+                });
+        });
     }
 }

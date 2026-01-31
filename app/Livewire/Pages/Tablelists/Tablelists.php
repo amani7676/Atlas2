@@ -28,11 +28,12 @@ class Tablelists extends Component
 
     public function mount()
     {
-        $this->loadResidentData();
+        // Defer data loading to improve initial page load
+        // $this->loadResidentData();
     }
 
     // متد جداگانه برای لود کردن داده‌های residents
-    private function loadResidentData(): void
+    public function loadResidentData(): void
     {
         // ابتدا آرایه‌ها را خالی کنید
         $this->full_name = [];
@@ -126,6 +127,9 @@ class Tablelists extends Component
     #[On('residentDataUpdated')]  // اضافه شده
     public function refreshResidentData(): void
     {
+        // Clear cache to ensure fresh data
+        \App\Services\Report\AllReportService::clearAllCache();
+        
         // داده‌های residents را مجدداً لود کنید
         $this->loadResidentData();
     }
@@ -198,6 +202,9 @@ class Tablelists extends Component
                     'description' => "مشخصات " . ($resident->full_name ?? 'کاربر') . " به روز شد",
                     'timer' => 3000
                 ]);
+                
+                // Clear cache to ensure fresh data
+                \App\Services\Report\AllReportService::clearAllCache();
             }
         } catch (\Exception $e) {
             $this->dispatch('show-toast', [
@@ -218,12 +225,14 @@ class Tablelists extends Component
     public function editResident($residentId): void
     {
         // ارسال رویداد به کامپوننت مودال برای ویرایش
+        // بدون نیاز به لود مجدد داده‌ها
         $this->dispatch('openEditResidentModal', $residentId);
     }
 
     public function detailsChange($residentId): void
     {
         // ارسال رویداد به کامپوننت مودال برای تغییر جزئیات
+        // بدون نیاز به لود مجدد داده‌ها
         $this->dispatch('openDetailsChangeModal', $residentId);
     }
     #[On('update_notes')]
@@ -260,6 +269,11 @@ class Tablelists extends Component
 
     public function render()
     {
+        // Only load data if not already loaded to prevent unnecessary queries
+        if (empty($this->full_name)) {
+            $this->loadResidentData();
+        }
+        
         return view('livewire.pages.tablelists.tablelists', [
             'allReportService' => $this->service(AllReportService::class),
             'statusService' => $this->service(StatusService::class),

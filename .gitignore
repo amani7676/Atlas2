@@ -1,0 +1,31 @@
+/node_modules
+/public/hot
+/public/storage
+/storage/*.key
+.env
+.env.backup
+.env.production
+.phpunit.result.cache
+Homestead.json
+Homestead.yaml
+npm-debug.log
+yarn-error.log
+.DS_Store
+Thumbs.db
+
+# Laravel specific
+/public/build
+/public/vendor
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Local assets (keep them in git)
+# Uncomment the following lines if you want to exclude downloaded assets from git
+# /public/assets/css/
+# /public/assets/js/
+# /public/assets/fonts/

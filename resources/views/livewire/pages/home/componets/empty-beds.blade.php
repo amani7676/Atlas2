@@ -30,14 +30,10 @@
                             <td>{{ $bed->name }}</td>
                             <td>{{ $bed->room->bed_count ?? 'N/A' }}</td>
                             <td>
-                                <button class="btn btn-sm btn-primary"
-                                        wire:click="openModal({{ json_encode([
-                                                'id' => $bed->id,
-                                                'name' => $bed->name,
-                                                'room' => $bed->room->name ?? 'N/A',
-                                            ]) }})">
+                                <a href="{{ route('table_list') }}#{{ $bed->room->name ?? 'N/A' }}" 
+                                   class="btn btn-sm btn-primary">
                                     <i class="fas fa-plus"></i> افزودن
-                                </button>
+                                </a>
                             </td>
                         </tr>
                     @empty

@@ -80,20 +80,24 @@
                                             <tbody>
                                             @foreach ($roomData['beds'] as $bed)
                                                 @if (!$bed['contracts']->first() || $bed['contracts'] == null)
-                                                    <tr class="empty-bed" style="background-color: #ADD8E6;">
-                                                        <!-- آبی برای تخت خالی -->
+                                                    @php
+                                                        $isHighlighted = ($this->highlightRoom == $roomData['room']['name']);
+                                                    @endphp
+                                                    <tr class="empty-bed {{ $isHighlighted ? 'highlighted-bed' : '' }}" style="background-color: {{ $isHighlighted ? '#FFD700' : '#ADD8E6' }};">
+                                                        <!-- آبی برای تخت خالی، طلایی برای تخت مشخص شده -->
                                                         <td class="bed-number">
                                                             {{ substr($bed['bed']['name'], -1) }}
                                                         </td>
                                                         <td colspan="4" class="text-center">
-                                                            <span class="empty-bed-text">تخت خالی</span>
+                                                            <span class="empty-bed-text">
+                                                                {{ $isHighlighted ? 'تخت مورد نظر برای افزودن ساکن' : 'تخت خالی' }}
+                                                            </span>
                                                         </td>
                                                         <td></td>
                                                         <td class="text-center">
-                                                            <button
-                                                                wire:click="openAddModal('{{ $bed['bed']['name'] }}', '{{ $roomData['room']['name'] }}')"
-                                                                class="btn btn-sm btn-outline-success add-resident-btn"
-                                                                title="افزودن ساکن">
+                                                            <button wire:click="openAddModal('{{ $bed['bed']['name'] }}', '{{ $roomData['room']['name'] }}')"
+                                                                    class="btn btn-sm {{ $isHighlighted ? 'btn-warning' : 'btn-outline-success' }} add-resident-btn"
+                                                                    title="افزودن ساکن">
                                                                 <i class="fas fa-user-plus"></i>
                                                             </button>
                                                         </td>
@@ -258,9 +262,22 @@
             }
         });
 
-        // اضافه کردن event listener برای فرمت کردن شماره تلفن در client-side (اختیاری)
+        // Debouncing function for phone input optimization
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+
+        // اضافه کردن event listener برای فرمت کردن شماره تلفن در client-side با debouncing
         document.addEventListener('DOMContentLoaded', function () {
-            document.addEventListener('input', function (e) {
+            const debouncedPhoneHandler = debounce(function (e) {
                 if (e.target.classList.contains('phone-input')) {
                     let value = e.target.value.replace(/\D/g, '');
 
@@ -270,7 +287,54 @@
 
                     e.target.value = value;
                 }
-            });
+            }, 300); // 300ms delay for debouncing
+
+            document.addEventListener('input', debouncedPhoneHandler);
+
+            // Auto-scroll to highlighted room using hash
+            setTimeout(() => {
+                // Get hash from URL
+                const urlHash = window.location.hash;
+                if (urlHash) {
+                    const roomName = urlHash.substring(1); // Remove # symbol
+                    
+                    // Find the room container by matching room name
+                    const roomContainers = document.querySelectorAll('.otagh-card');
+                    let targetRoom = null;
+                    
+                    roomContainers.forEach(container => {
+                        const roomHeader = container.querySelector('.otagh-header h5');
+                        if (roomHeader && roomHeader.textContent.trim() === roomName) {
+                            targetRoom = container;
+                        }
+                    });
+                    
+                    if (targetRoom) {
+                        // Scroll to the room container
+                        targetRoom.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'center'
+                        });
+                        
+                        // Add highlight effect to the room
+                        targetRoom.style.border = '3px solid #FFD700';
+                        targetRoom.style.boxShadow = '0 0 20px rgba(255, 215, 0, 0.5)';
+                        targetRoom.style.transition = 'all 0.3s ease';
+                        
+                        // Remove room highlight after 3 seconds
+                        setTimeout(() => {
+                            targetRoom.style.border = '';
+                            targetRoom.style.boxShadow = '';
+                        }, 3000);
+                        
+                        // Highlight all empty beds in this room
+                        const emptyBeds = targetRoom.querySelectorAll('.highlighted-bed');
+                        emptyBeds.forEach(bed => {
+                            bed.style.animation = 'pulse 1s ease-in-out 3';
+                        });
+                    }
+                }
+            }, 500); // Small delay to ensure page is fully loaded
         });
     </script>
     @endscript
@@ -622,6 +686,19 @@
 
         .empty-bed {
             background-color: #ADD8E6; /* آبی */
+        }
+
+        .highlighted-bed {
+            background-color: #FFD700 !important; /* طلایی برای تخت مشخص شده */
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.7);
+            border: 2px solid #FFA500;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
         }
     </style>
 </div>

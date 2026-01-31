@@ -236,20 +236,23 @@ class AllReportService
         return \Cache::remember($cacheKey, $cacheTime, function () {
             return Unit::with([
                 'rooms' => function ($query) {
-                    $query->where('type', 'room') // Add this to filter rooms by type
+                    $query->where('type', 'room')
                     ->orderBy('name', 'desc')
                         ->with([
                             'beds' => function ($bedQuery) {
                                 $bedQuery->with([
                                     'contracts' => function ($contractQuery) {
-                                        $contractQuery->with('resident.notes');
+                                        $contractQuery->with('resident.notes')
+                                            ->whereHas('resident', function ($residentQuery) {
+                                                $residentQuery->whereNotNull('id'); // Only load contracts with valid residents
+                                            });
                                     }
                                 ]);
                             }
                         ]);
                 }
             ])
-                ->orderByDesc('code') // تغییر اصلی اینجا - مرتب سازی نزولی بر اساس کد
+                ->orderByDesc('code')
                 ->get()->map(function ($unit) {
                     return [
                         'unit' => [

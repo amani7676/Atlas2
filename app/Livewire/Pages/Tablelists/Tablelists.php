@@ -21,6 +21,8 @@ class Tablelists extends Component
     public array $full_name = [];
     public array $phone = [];
     public array $payment_date = [];
+    public ?string $highlightBed = null;
+    public ?string $highlightRoom = null;
     protected $listeners = [
         'residentAdded' => 'refreshResidentData',
         'residentDataUpdated' => 'refreshResidentData'  // اضافه شده
@@ -28,6 +30,20 @@ class Tablelists extends Component
 
     public function mount()
     {
+        // Get hash fragment from URL for room highlighting
+        $urlHash = request()->server('HTTP_REFERER') ?? '';
+        if (strpos($urlHash, '#') !== false) {
+            $hashPart = substr($urlHash, strpos($urlHash, '#') + 1);
+            $this->highlightRoom = $hashPart;
+        }
+        
+        // Also check current URL hash (for direct access)
+        $currentUrl = request()->fullUrl();
+        if (strpos($currentUrl, '#') !== false) {
+            $hashPart = substr($currentUrl, strpos($currentUrl, '#') + 1);
+            $this->highlightRoom = $hashPart;
+        }
+        
         // Defer data loading to improve initial page load
         // $this->loadResidentData();
     }
@@ -84,13 +100,13 @@ class Tablelists extends Component
         return preg_replace('/\D/', '', $phoneNumber); // حذف تمام کاراکترهای غیر عددی
     }
 
-    // متد جدید برای هندل کردن تغییرات شماره تلفن در real-time
+    // متد جدید برای هندل کردن تغییرات شماره تلفن در real-time با debouncing
     public function updatedPhone($value, $key): void
     {
         // فرمت کردن شماره تلفن هنگام تایپ
         $this->phone[$key] = $this->formatPhoneNumberForDisplay($value);
-        // ولیدیشن شماره تلفن
-        $this->validatePhoneNumber($key);
+        // حذف ولیدیشن real-time برای بهبود performance
+        // $this->validatePhoneNumber($key);
     }
 
     // متد ولیدیشن شماره تلفن
@@ -165,16 +181,6 @@ class Tablelists extends Component
     public function editResidentInline($residentId): void
     {
         try {
-            // ولیدیشن قبل از ذخیره
-//            if (!$this->validatePhoneNumber($residentId)) {
-//                $this->dispatch('show-toast', [
-//                    'type' => 'error',
-//                    'title' => 'خطا!',
-//                    'description' => 'لطفا شماره تلفن را به درستی وارد کنید',
-//                    'timer' => 4000
-//                ]);
-//                return;
-//            }
             // بروزرسانی اطلاعات ساکن
             $resident = \App\Models\Resident::find($residentId);
             if ($resident) {
@@ -203,8 +209,8 @@ class Tablelists extends Component
                     'timer' => 3000
                 ]);
                 
-                // Clear cache to ensure fresh data
-                \App\Services\Report\AllReportService::clearAllCache();
+                // Only clear specific cache instead of all cache
+                $this->clearSpecificResidentCache($residentId);
             }
         } catch (\Exception $e) {
             $this->dispatch('show-toast', [
@@ -264,6 +270,20 @@ class Tablelists extends Component
                 'description' => 'خطا در حذف یادداشت: ' . $e->getMessage(),
                 'timer' => 4000
             ]);
+        }
+    }
+
+    // متد جدید برای پاک کردن cache خاص یک resident به جای کل cache
+    private function clearSpecificResidentCache($residentId): void
+    {
+        try {
+            // فقط cache مربوط به این resident را پاک می‌کنیم
+            \Cache::forget('resident_' . $residentId);
+            // به جای پاک کردن کل cache، فقط cache units را آپدیت می‌کنیم
+            \Cache::forget('units_with_dependence');
+        } catch (\Exception $e) {
+            // در صورت خطا، فقط cache مربوط به units را پاک می‌کنیم
+            \Cache::forget('units_with_dependence');
         }
     }
 

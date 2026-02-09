@@ -63,6 +63,16 @@ class AllReportService
         try {
             // Clear specific cache keys
             \Cache::forget('units_with_dependence');
+            \Cache::forget('units_with_dependence_v2');
+            \Cache::forget('units_with_dependence_v3');
+            \Cache::forget('units_with_dependence_v4');
+            
+            // Clear user-specific caches
+            $userId = auth()->id() ?? 'anonymous';
+            \Cache::forget('units_with_dependence_user_' . $userId);
+            \Cache::forget('units_with_dependence_v2_user_' . $userId);
+            \Cache::forget('units_with_dependence_v3_user_' . $userId);
+            \Cache::forget('units_with_dependence_v4_user_' . $userId);
             
             // Clear residents cache
             self::clearResidentsCache();
@@ -228,13 +238,20 @@ class AllReportService
     public function getUnitWithDependence()
     {
         // Cache key for units data
-        $cacheKey = 'units_with_dependence';
+        $cacheKey = 'units_with_dependence_v4';
         
-        // Cache for 30 minutes in production, 1 minute in development
-        $cacheTime = app()->environment('production') ? 30 : 1;
+        // Cache for 60 minutes in production, 15 minutes in development
+        $cacheTime = app()->environment('production') ? 60 : 15;
         
-        return \Cache::remember($cacheKey, $cacheTime, function () {
-            return Unit::with([
+        // Add user-specific cache for multi-tenant environments
+        $userId = auth()->id() ?? 'anonymous';
+        $userCacheKey = $cacheKey . '_user_' . $userId;
+        
+        return \Cache::remember($userCacheKey, $cacheTime, function () {
+            // Log query start time for debugging
+            $startTime = microtime(true);
+            
+            $result = Unit::with([
                 'rooms' => function ($query) {
                     $query->where('type', 'room')
                     ->orderBy('name', 'desc')
@@ -242,18 +259,27 @@ class AllReportService
                             'beds' => function ($bedQuery) {
                                 $bedQuery->with([
                                     'contracts' => function ($contractQuery) {
-                                        $contractQuery->with('resident.notes')
-                                            ->whereHas('resident', function ($residentQuery) {
-                                                $residentQuery->whereNotNull('id'); // Only load contracts with valid residents
-                                            });
+                                        $contractQuery->with(['resident' => function ($residentQuery) {
+                                            $residentQuery->select('id', 'full_name', 'phone', 'age', 'job', 'referral_source', 'document', 'form', 'rent', 'trust')
+                                                ->with(['notes' => function ($noteQuery) {
+                                                    $noteQuery->select('id', 'resident_id', 'type', 'note', 'created_at')
+                                                        ->orderBy('created_at', 'desc')
+                                                        ->limit(3); // Further reduced to 3 for better performance
+                                                }]);
+                                        }])
+                                        ->select('id', 'resident_id', 'bed_id', 'payment_date', 'start_date', 'end_date', 'state')
+                                        ->whereHas('resident')
+                                        ->orderBy('created_at', 'desc');
                                     }
                                 ]);
                             }
                         ]);
                 }
             ])
+                ->select('id', 'name', 'code', 'desc', 'color')
                 ->orderByDesc('code')
-                ->get()->map(function ($unit) {
+                ->get()
+                ->map(function ($unit) {
                     return [
                         'unit' => [
                             'id' => $unit->id,
@@ -281,6 +307,7 @@ class AllReportService
                                             'desc' => $bed->desc,
                                         ],
                                         'contracts' => $bed->contracts->map(function ($contract) {
+                                            $resident = $contract->resident;
                                             return [
                                                 'contract' => [
                                                     'id' => $contract->id,
@@ -290,19 +317,19 @@ class AllReportService
                                                     'end_date' => $contract->end_date_jalali,
                                                     'state' => $contract->state,
                                                 ],
-                                                'resident' => $contract->resident ? [
-                                                    'id' => $contract->resident->id,
-                                                    'full_name' => $contract->resident->full_name,
-                                                    'phone' => $contract->resident->formatted_phone,
-                                                    'age' => $contract->resident->age,
-                                                    'job' => $contract->resident->job,
-                                                    'referral_source' => $contract->resident->referral_source,
-                                                    'document' => $contract->resident->document,
-                                                    'form' => $contract->resident->form,
-                                                    'rent' => $contract->resident->rent,
-                                                    'trust' => $contract->resident->trust,
+                                                'resident' => $resident ? [
+                                                    'id' => $resident->id,
+                                                    'full_name' => $resident->full_name,
+                                                    'phone' => $resident->formatted_phone,
+                                                    'age' => $resident->age,
+                                                    'job' => $resident->job,
+                                                    'referral_source' => $resident->referral_source,
+                                                    'document' => $resident->document,
+                                                    'form' => $resident->form,
+                                                    'rent' => $resident->rent,
+                                                    'trust' => $resident->trust,
                                                 ] : null,
-                                                'notes' => $contract->resident?->notes->map(function ($note) {
+                                                'notes' => $resident?->notes->map(function ($note) {
                                                         return [
                                                             'id' => $note->id,
                                                             'type' => $note->type,
@@ -318,6 +345,16 @@ class AllReportService
                         }),
                     ];
                 });
+                
+            // Log performance for debugging
+            $endTime = microtime(true);
+            $executionTime = ($endTime - $startTime) * 1000; // Convert to milliseconds
+            
+            if (app()->environment('local')) {
+                \Log::info('getUnitWithDependence executed in ' . round($executionTime, 2) . 'ms');
+            }
+            
+            return $result;
         });
     }
 }

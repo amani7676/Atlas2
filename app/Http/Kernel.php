@@ -22,6 +22,8 @@ class Kernel extends HttpKernel
         \App\Http\Middleware\TrimStrings::class,
         \Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull::class,
         \App\Http\Middleware\SecurityHeaders::class, // Security Headers
+        \App\Http\Middleware\PerformanceMonitor::class, // Performance Monitoring
+        \App\Http\Middleware\ProductionOptimization::class, // Production Optimization
     ];
 
     /**

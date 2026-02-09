@@ -1,230 +1,183 @@
 <div class="resident-management" wire:init="loadResidentData">
-    @foreach ($this->allReportService()->getUnitWithDependence() as $data)
+    @php
+        // Cache the units data to avoid multiple calls
+        $unitsData = $this->allReportService()->getUnitWithDependence();
+    @endphp
+    
+    @foreach ($unitsData as $data)
         @php
             $colorClass = $this->getColorClass($data['unit']['id']);
+            $unitColor = $data['unit']['color'] ?? '#667eea';
         @endphp
         <div class="vahed-card mb-4 p-1">
-            <div class="card-header vahed-header" id="header_vahed_{{ $data['unit']['id'] }}" 
-                 style="background: linear-gradient(135deg, {{ $data['unit']['color'] ?? '#667eea' }} 0%, {{ $data['unit']['color'] ?? '#764ba2' }} 100%) !important;
-                        backdrop-filter: blur(20px) saturate(180%);
-                        -webkit-backdrop-filter: blur(20px) saturate(180%);
-                        background: linear-gradient(135deg, {{ $data['unit']['color'] ?? '#667eea' }}cc 0%, {{ $data['unit']['color'] ?? '#764ba2' }}cc 100%) !important;
-                        border: 1px solid rgba(255, 255, 255, 0.3);
-                        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
-                        position: relative;
-                        overflow: hidden;">
-                <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(135deg, {{ $data['unit']['color'] ?? '#667eea' }} 0%, {{ $data['unit']['color'] ?? '#764ba2' }} 100%); opacity: 0.85; z-index: -1;"></div>
-                <h4 class="mb-0 text-white" style="position: relative; z-index: 1;">{{ $data['unit']['name'] }}</h4>
+            <div class="card-header vahed-header" id="header_vahed_{{ $data['unit']['id'] }}">
+                <h4 class="mb-0 text-white">{{ $data['unit']['name'] }}</h4>
             </div>
             <div class="card-body p-0">
                 <div class="row g-2 g-md-3">
                     @foreach ($data['rooms'] as $roomData)
+                        @php
+                            $roomColor = $roomData['room']['color'] ?? '#f093fb';
+                            $isHighlighted = ($this->highlightRoom == $roomData['room']['name']);
+                        @endphp
                         <div class="col-12 col-md-6 col-lg-6 col-xl-6">
-                            <div class="otagh-card h-100" id="{{ $roomData['room']['name'] }}">
-                                <div class="card-header otagh-header bg--light"
-                                     id="otagh-vahed{{ $data['unit']['id'] }}"
-                                     style="background: linear-gradient(135deg, {{ $roomData['room']['color'] ?? '#f093fb' }}cc 0%, {{ $roomData['room']['color'] ?? '#f5576c' }}cc 100%) !important; 
-                                            backdrop-filter: blur(20px) saturate(180%);
-                                            -webkit-backdrop-filter: blur(20px) saturate(180%);
-                                            border: 1px solid rgba(255, 255, 255, 0.3);
-                                            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
-                                            color: white;
-                                            position: relative;
-                                            overflow: hidden;">
-                                    <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(135deg, {{ $roomData['room']['color'] ?? '#f093fb' }} 0%, {{ $roomData['room']['color'] ?? '#f5576c' }} 100%); opacity: 0.85; z-index: -1;"></div>
-                                    <h5 class="mb-0" style="position: relative; z-index: 1;">{{ $roomData['room']['name'] }}</h5>
+                            <div class="otagh-card h-100 {{ $isHighlighted ? 'highlighted-room' : '' }}" id="{{ $roomData['room']['name'] }}">
+                                <div class="card-header otagh-header bg--light" id="otagh-vahed{{ $data['unit']['id'] }}">
+                                    <h5 class="mb-0">{{ $roomData['room']['name'] }}</h5>
                                 </div>
                                 <div class="card-body p-0" id="tableforvahed{{ $data['unit']['id'] }}">
-                                    <!-- این کانتینر اسکرول افقی را به صورت شرطی مدیریت می‌کند -->
                                     <div class="conditional-scroll-container">
                                         <table class="table table-sm table-hover modern-table conditional-scroll-table" id="{{ $roomData['room']['name'] }}">
                                             <thead>
-                                            <tr style="background: linear-gradient(135deg, {{ $roomData['room']['color'] ?? '#f093fb' }}cc 0%, {{ $roomData['room']['color'] ?? '#f5576c' }}cc 100%) !important;
-                                                    backdrop-filter: blur(20px) saturate(180%);
-                                                    -webkit-backdrop-filter: blur(20px) saturate(180%);
-                                                    border: 1px solid rgba(255, 255, 255, 0.3);
-                                                    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
-                                                    position: relative;
-                                                    overflow: hidden;">
-                                                <th style="color: white !important; position: relative; z-index: 1; background: transparent !important;">تخت</th>
-                                                <th style="color: white !important; position: relative; z-index: 1; background: transparent !important;">نام</th>
-                                                <th style="color: white !important; position: relative; z-index: 1; background: transparent !important;">تلفن</th>
-                                                <th style="color: white !important; position: relative; z-index: 1; background: transparent !important;">سررسید</th>
-                                                <th style="color: white !important; position: relative; z-index: 1; background: transparent !important;">مانده تا سررسید</th>
-                                                <th style="color: white !important; position: relative; z-index: 1; background: transparent !important;">وضعیت</th>
-                                                <th style="color: white !important; position: relative; z-index: 1; background: transparent !important;">عملیات</th>
-                                            </tr>
-                                            <style>
-                                                #{{ $roomData['room']['name'] }} thead tr {
-                                                    background: linear-gradient(135deg, {{ $roomData['room']['color'] ?? '#f093fb' }}cc 0%, {{ $roomData['room']['color'] ?? '#f5576c' }}cc 100%) !important;
-                                                }
-                                                #{{ $roomData['room']['name'] }} thead tr::before {
-                                                    content: '';
-                                                    position: absolute;
-                                                    top: 0;
-                                                    left: 0;
-                                                    right: 0;
-                                                    bottom: 0;
-                                                    background: linear-gradient(135deg, {{ $roomData['room']['color'] ?? '#f093fb' }} 0%, {{ $roomData['room']['color'] ?? '#f5576c' }} 100%);
-                                                    opacity: 0.85;
-                                                    z-index: 0;
-                                                    backdrop-filter: blur(20px) saturate(180%);
-                                                    -webkit-backdrop-filter: blur(20px) saturate(180%);
-                                                }
-                                                #{{ $roomData['room']['name'] }} thead th {
-                                                    background: transparent !important;
-                                                    border: none !important;
-                                                }
-                                            </style>
+                                                <tr>
+                                                    <th>تخت</th>
+                                                    <th>نام</th>
+                                                    <th>تلفن</th>
+                                                    <th>سررسید</th>
+                                                    <th>مانده تا سررسید</th>
+                                                    <th>وضعیت</th>
+                                                    <th>عملیات</th>
+                                                </tr>
                                             </thead>
                                             <tbody>
-                                            @foreach ($roomData['beds'] as $bed)
-                                                @if (!$bed['contracts']->first() || $bed['contracts'] == null)
-                                                    @php
-                                                        $isHighlighted = ($this->highlightRoom == $roomData['room']['name']);
-                                                    @endphp
-                                                    <tr class="empty-bed {{ $isHighlighted ? 'highlighted-bed' : '' }}" style="background-color: {{ $isHighlighted ? '#FFD700' : '#ADD8E6' }};">
-                                                        <!-- آبی برای تخت خالی، طلایی برای تخت مشخص شده -->
-                                                        <td class="bed-number">
-                                                            {{ substr($bed['bed']['name'], -1) }}
-                                                        </td>
-                                                        <td colspan="4" class="text-center">
-                                                            <span class="empty-bed-text">
-                                                                {{ $isHighlighted ? 'تخت مورد نظر برای افزودن ساکن' : 'تخت خالی' }}
-                                                            </span>
-                                                        </td>
-                                                        <td></td>
-                                                        <td class="text-center">
-                                                            <button wire:click="openAddModal('{{ $bed['bed']['name'] }}', '{{ $roomData['room']['name'] }}')"
-                                                                    class="btn btn-sm {{ $isHighlighted ? 'btn-warning' : 'btn-outline-success' }} add-resident-btn fast-action-btn"
-                                                                    title="افزودن ساکن"
-                                                                    onclick="this.classList.add('loading')">
-                                                                <i class="action-icon fas fa-user-plus"></i>
-                                                                <i class="action-spinner fas fa-spinner fa-spin" style="display: none;"></i>
-                                                            </button>
-                                                        </td>
-                                                    </tr>
-                                                @else
-                                                    @php
-                                                        $contractData = $bed['contracts']->first();
-                                                        $contract = $contractData['contract'];
-                                                        $resident = $contractData['resident'];
-                                                        // تعیین کلاس رنگ بر اساس وضعیت
-                                                        $statusClass = match ($contract['state'] ?? '') {
-                                                            "nightly" => 'similar-bed', // سیاه
-                                                            "rezerve" => 'reserved-bed', // سبز
-                                                            "leaving" => 'exiting-bed', // قرمز
-                                                            "active" => 'occupied-bed', // پیش‌فرض
-                                                        };
-                                                    @endphp
-                                                    <tr class="{{ $statusClass }}"
-                                                        data-resident-id="{{ $resident['id'] }}">
-
-                                                        <td class="bed-number">
-                                                            {{ $bed['bed']['name'] }}
-                                                        </td>
-
-                                                        <td class="resident-name">
-                                                            <input type="text"
-                                                                   wire:model="full_name.{{ $resident['id'] }}"
-                                                                   class="form-control form-control-sm"
-                                                                   value="{{ $resident['full_name'] ?? '' }}">
-                                                        </td>
-
-                                                        <td class="resident-phone">
-                                                            <div>
+                                                @foreach ($roomData['beds'] as $bed)
+                                                    @if (!$bed['contracts']->first() || $bed['contracts'] == null)
+                                                        <tr class="empty-bed {{ $isHighlighted ? 'highlighted-bed' : '' }}">
+                                                            <td class="bed-number">
+                                                                {{ substr($bed['bed']['name'], -1) }}
+                                                            </td>
+                                                            <td colspan="4" class="text-center">
+                                                                <span class="empty-bed-text">
+                                                                    {{ $isHighlighted ? 'تخت مورد نظر برای افزودن ساکن' : 'تخت خالی' }}
+                                                                </span>
+                                                            </td>
+                                                            <td></td>
+                                                            <td class="text-center">
+                                                                <button wire:click="openAddModal('{{ $bed['bed']['name'] }}', '{{ $roomData['room']['name'] }}')"
+                                                                        class="btn btn-sm {{ $isHighlighted ? 'btn-warning' : 'btn-outline-success' }} add-resident-btn fast-action-btn"
+                                                                        title="افزودن ساکن"
+                                                                        onclick="this.classList.add('loading')">
+                                                                    <i class="action-icon fas fa-user-plus"></i>
+                                                                    <i class="action-spinner fas fa-spinner fa-spin" style="display: none;"></i>
+                                                                </button>
+                                                            </td>
+                                                        </tr>
+                                                    @else
+                                                        @php
+                                                            $contractData = $bed['contracts']->first();
+                                                            $contract = $contractData['contract'];
+                                                            $resident = $contractData['resident'];
+                                                            $statusClass = match ($contract['state'] ?? '') {
+                                                                "nightly" => 'similar-bed',
+                                                                "rezerve" => 'reserved-bed', 
+                                                                "leaving" => 'exiting-bed',
+                                                                "active" => 'occupied-bed',
+                                                                default => 'occupied-bed',
+                                                            };
+                                                            // Ensure resident data exists in arrays
+                                                            $this->ensureResidentDataExists($resident['id']);
+                                                        @endphp
+                                                        <tr class="{{ $statusClass }}" data-resident-id="{{ $resident['id'] }}">
+                                                            <td class="bed-number">
+                                                                {{ $bed['bed']['name'] }}
+                                                            </td>
+                                                            <td class="resident-name">
                                                                 <input type="text"
-                                                                       wire:model="phone.{{ $resident['id'] }}"
-                                                                       class="form-control form-control-sm phone-input @error('phone.'.$resident['id']) is-invalid @enderror"
-                                                                       maxlength="13"
-                                                                       value="{{ $phone[$resident['id']] ?? '' }}"
-                                                                       placeholder="09xxxxxxxxx">
-                                                                @error('phone.'.$resident['id'])
-                                                                    <div class="invalid-feedback">{{ $message }}</div>
-                                                                @enderror
-                                                                @if($phone[$resident['id']] && !preg_match('/^09[0-9]{9}$/', preg_replace('/[^0-9]/', '', $phone[$resident['id']])))
-                                                                    <div class="text-danger small mt-1">
-                                                                        <i class="fas fa-exclamation-triangle me-1"></i>
-                                                                        نامعتبر
-                                                                    </div>
-                                                                @endif
-                                                            </div>
-                                                        </td>
+                                                                       wire:model="full_name.{{ $resident['id'] }}"
+                                                                       class="form-control form-control-sm"
+                                                                       value="{{ $this->getSafeArrayValue($full_name, $resident['id']) }}">
+                                                            </td>
+                                                            <td class="resident-phone">
+                                                                <div>
+                                                                    <input type="text"
+                                                                           wire:model="phone.{{ $resident['id'] }}"
+                                                                           class="form-control form-control-sm phone-input @error('phone.'.$resident['id']) is-invalid @enderror"
+                                                                           maxlength="13"
+                                                                           value="{{ $this->getSafeArrayValue($phone, $resident['id']) }}"
+                                                                           placeholder="09xxxxxxxxx">
+                                                                    @error('phone.'.$resident['id'])
+                                                                        <div class="invalid-feedback">{{ $message }}</div>
+                                                                    @enderror
+                                                                    @if($this->getSafeArrayValue($phone, $resident['id']) && !preg_match('/^09[0-9]{9}$/', preg_replace('/[^0-9]/', '', $this->getSafeArrayValue($phone, $resident['id']))))
+                                                                        <div class="text-danger small mt-1">
+                                                                            <i class="fas fa-exclamation-triangle me-1"></i>
+                                                                            نامعتبر
+                                                                        </div>
+                                                                    @endif
+                                                                </div>
+                                                            </td>
+                                                            <td class="resident-date">
+                                                                <input type="text"
+                                                                       wire:model="payment_date.{{ $resident['id'] }}"
+                                                                       class="form-control form-control-sm"
+                                                                       value="{{ $this->getSafeArrayValue($payment_date, $resident['id']) }}">
+                                                            </td>
+                                                            <td class="resident-since">
+                                                                {!! $statusService->getStatusBadge($contract['day_since_payment']) !!}
+                                                            </td>
+                                                            <td class="resident-note">
+                                                                <div class="notes-container">
+                                                                    @foreach ($contractData['notes'] as $note)
+                                                                        @php
+                                                                            $noteRepository = app(\App\Repositories\NoteRepository::class);
+                                                                            $noteText = $note['note'];
+                                                                            if ($note['type'] === 'end_date' && preg_match('/(\d{4})\/(\d{1,2})\/(\d{1,2})/', $noteText, $matches)) {
+                                                                                $noteText = $matches[2] . '/' . $matches[3];
+                                                                            } else {
+                                                                                $noteText = $noteRepository->formatNoteForDisplay($note);
+                                                                            }
+                                                                            $badgeStyle = $noteRepository->getNoteBadgeStyle($note['type']);
+                                                                        @endphp
+                                                                        <span class="badge rounded-pill note-badge"
+                                                                              style="{{ $badgeStyle }} position: relative; padding: 6px 22px 6px 10px; margin: 2px 0; display: block; font-size: 0.85rem; width: fit-content;">
+                                                                            {{ $noteText }}
+                                                                            <i class="fas fa-times-circle"
+                                                                               style="position: absolute; right: 4px; top: 50%; transform: translateY(-50%); cursor: pointer; font-size: 0.7rem; color: #dc3545; opacity: 0.8;"
+                                                                               wire:click="deleteNote({{ $note['id'] }})"
+                                                                               title="حذف یادداشت"
+                                                                               onmouseover="this.style.opacity='1'; this.style.transform='translateY(-50%) scale(1.2)';"
+                                                                               onmouseout="this.style.opacity='0.8'; this.style.transform='translateY(-50%) scale(1)';"></i>
+                                                                        </span>
+                                                                    @endforeach
+                                                                </div>
+                                                            </td>
+                                                            <td class="action-buttons position-relative">
+                                                                <!-- سایر دکمه‌ها -->
+                                                                <button wire:click="editResidentInline({{ $resident['id'] }})"
+                                                                        wire:loading.attr="disabled"
+                                                                        wire:target="editResidentInline({{ $resident['id'] }})"
+                                                                        class="btn btn-sm me-1" style="background: #609966"
+                                                                        title="ذخیره تغییرات">
+                                                                    <i wire:loading wire:target="editResidentInline({{ $resident['id'] }})" 
+                                                                       class="fas fa-spinner fa-spin"></i>
+                                                                    <i wire:loading.remove wire:target="editResidentInline({{ $resident['id'] }})" 
+                                                                       class="fas fa-circle-check" style="color: #ffffff;"></i>
+                                                                </button>
 
-                                                        <td class="resident-date">
-                                                            <input type="text"
-                                                                   wire:model="payment_date.{{ $resident['id'] }}"
-                                                                   class="form-control form-control-sm"
-                                                                   value="{{ $contract['payment_date'] ?? '' }}">
-                                                        </td>
+                                                                <button wire:click="editResident({{ $resident['id'] }})"
+                                                                        class="btn btn-sm me-1 fast-action-btn" 
+                                                                        style="background: #FFBBCC"
+                                                                        title="ویرایش"
+                                                                        onclick="this.classList.add('loading')"
+                                                                        wire:target="editResidentModal">
+                                                                    <i class="action-icon fas fa-eye"></i>
+                                                                    <i class="action-spinner fas fa-spinner fa-spin" style="display: none;"></i>
+                                                                </button>
 
-                                                        <td class="resident-since">
-                                                            {!! $statusService->getStatusBadge($contract['day_since_payment']) !!}
-                                                        </td>
+                                                                <button wire:click="detailsChange({{ $resident['id'] }})"
+                                                                        class="btn btn-sm me-1 fast-action-btn"
+                                                                        style="background: #BC6FF1; color: white;"
+                                                                        title="تغییرات جزییات"
+                                                                        onclick="this.classList.add('loading')"
+                                                                        wire:target="detailsChangeModal">
+                                                                    <i class="action-icon fas fa-gear"></i>
+                                                                    <i class="action-spinner fas fa-spinner fa-spin" style="display: none;"></i>
+                                                                </button>
 
-                                                        <td class="resident-note">
-                                                            <div class="notes-container">
-                                                                @foreach ($contractData['notes'] as $note)
-                                                                    @php
-                                                                        $noteRepository = app(\App\Repositories\NoteRepository::class);
-                                                                        $noteText = $note['note'];
-                                                                        // اگر نوع end_date است، فقط ماه و روز را نمایش بده
-                                                                        if ($note['type'] === 'end_date' && preg_match('/(\d{4})\/(\d{1,2})\/(\d{1,2})/', $noteText, $matches)) {
-                                                                            $noteText = $matches[2] . '/' . $matches[3];
-                                                                        } else {
-                                                                            $noteText = $noteRepository->formatNoteForDisplay($note);
-                                                                        }
-                                                                        $badgeStyle = $noteRepository->getNoteBadgeStyle($note['type']);
-                                                                    @endphp
-                                                                    <span class="badge rounded-pill note-badge"
-                                                                          style="{{ $badgeStyle }} position: relative; padding: 6px 22px 6px 10px; margin: 2px 0; display: block; font-size: 0.85rem; width: fit-content;">
-                                                                        {{ $noteText }}
-                                                                        <i class="fas fa-times-circle"
-                                                                           style="position: absolute; right: 4px; top: 50%; transform: translateY(-50%); cursor: pointer; font-size: 0.7rem; color: #dc3545; opacity: 0.8;"
-                                                                           wire:click="deleteNote({{ $note['id'] }})"
-                                                                           title="حذف یادداشت"
-                                                                           onmouseover="this.style.opacity='1'; this.style.transform='translateY(-50%) scale(1.2)';"
-                                                                           onmouseout="this.style.opacity='0.8'; this.style.transform='translateY(-50%) scale(1)';"></i>
-                                                                    </span>
-                                                                @endforeach
-                                                            </div>
-                                                        </td>
-
-                                                        <td class="action-buttons position-relative">
-                                                            <!-- سایر دکمه‌ها -->
-                                                            <button wire:click="editResidentInline({{ $resident['id'] }})"
-                                                                    wire:loading.attr="disabled"
-                                                                    wire:target="editResidentInline({{ $resident['id'] }})"
-                                                                    class="btn btn-sm me-1" style="background: #609966"
-                                                                    title="ذخیره تغییرات">
-                                                                <i wire:loading wire:target="editResidentInline({{ $resident['id'] }})" 
-                                                                   class="fas fa-spinner fa-spin"></i>
-                                                                <i wire:loading.remove wire:target="editResidentInline({{ $resident['id'] }})" 
-                                                                   class="fas fa-circle-check" style="color: #ffffff;"></i>
-                                                            </button>
-
-                                                            <button wire:click="editResident({{ $resident['id'] }})"
-                                                                    class="btn btn-sm me-1 fast-action-btn" 
-                                                                    style="background: #FFBBCC"
-                                                                    title="ویرایش"
-                                                                    onclick="this.classList.add('loading')">
-                                                                <i class="action-icon fas fa-eye"></i>
-                                                                <i class="action-spinner fas fa-spinner fa-spin" style="display: none;"></i>
-                                                            </button>
-
-                                                            <button wire:click="detailsChange({{ $resident['id'] }})"
-                                                                    class="btn btn-sm me-1 fast-action-btn"
-                                                                    style="background: #BC6FF1; color: white;"
-                                                                    title="تغییرات جزییات"
-                                                                    onclick="this.classList.add('loading')">
-                                                                <i class="action-icon fas fa-gear"></i>
-                                                                <i class="action-spinner fas fa-spinner fa-spin" style="display: none;"></i>
-                                                            </button>
-
-                                                        </td>
-                                                    </tr>
-                                                @endif
-                                            @endforeach
+                                                            </td>
+                                                        </tr>
+                                                    @endif
+                                                @endforeach
                                             </tbody>
                                         </table>
                                     </div>
@@ -285,7 +238,7 @@
 
                     e.target.value = value;
                 }
-            }, 300); // 300ms delay for debouncing
+            }, 200); // Reduced debounce time for better responsiveness
 
             document.addEventListener('input', debouncedPhoneHandler);
 
@@ -299,10 +252,10 @@
                         // Add loading state immediately
                         this.classList.add('loading');
                         
-                        // Remove loading after 3 seconds (fallback)
+                        // Remove loading after 2 seconds (fallback)
                         setTimeout(() => {
                             this.classList.remove('loading');
-                        }, 3000);
+                        }, 2000);
                     });
                 });
                 
@@ -369,10 +322,13 @@
                         });
                     }
                 }
-            }, 500); // Small delay to ensure page is fully loaded
+            }, 300); // Reduced delay for faster response
         });
     </script>
     @endscript
+    
+    <!-- Load performance optimizer script -->
+    <script src="{{ asset('assets/js/tablelist-optimizer.js') }}" defer></script>
     <style>
         /* --- استایل‌های واکنش‌گرا برای اسکرول افقی در همه اندازه‌ها --- */
 
@@ -802,6 +758,50 @@
 
         .add-resident-btn.loading .action-spinner {
             display: inline-block !important;
+        }
+        
+        /* استایل‌های برای هدرهای واحد و اتاق */
+        .vahed-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .otagh-header {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%) !important;
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .otagh-header h5 {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .highlighted-room {
+            border: 3px solid #FFD700;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+            transition: all 0.3s ease;
+        }
+        
+        .highlighted-bed {
+            background-color: #FFD700 !important;
+            animation: pulse 1s ease-in-out 3;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
         }
     </style>
 </div>

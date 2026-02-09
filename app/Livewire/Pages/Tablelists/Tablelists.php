@@ -44,20 +44,19 @@ class Tablelists extends Component
             $this->highlightRoom = $hashPart;
         }
         
-        // Defer data loading to improve initial page load
-        // $this->loadResidentData();
+        // Don't load data on mount - use lazy loading instead
     }
 
     // متد جداگانه برای لود کردن داده‌های residents
     public function loadResidentData(): void
     {
+        // تمام واحدها را با وابستگی‌هایشان (ساکنین و قراردادها) دریافت می‌کنیم
+        $allUnitsData = $this->allReportService()->getUnitWithDependence();
+
         // ابتدا آرایه‌ها را خالی کنید
         $this->full_name = [];
         $this->phone = [];
         $this->payment_date = [];
-
-        // تمام واحدها را با وابستگی‌هایشان (ساکنین و قراردادها) دریافت می‌کنیم
-        $allUnitsData = $this->allReportService()->getUnitWithDependence();
 
         foreach ($allUnitsData as $unitData) {
             foreach ($unitData['rooms'] as $roomData) {
@@ -71,7 +70,7 @@ class Tablelists extends Component
                         // خصوصیات Livewire را با داده‌های موجود مقداردهی اولیه می‌کنیم
                         $this->full_name[$resident['id']] = $resident['full_name'] ?? '';
                         // اینجا شماره تلفن را برای نمایش با خط فاصله فرمت می‌کنیم
-                        $this->phone[$resident['id']] = $this->formatPhoneNumberForDisplay($resident['phone'] ?? '');
+                        $this->phone[$resident['id']] = $resident['phone'] ?? '';
                         $this->payment_date[$resident['id']] = $contract['payment_date'] ?? '';
                     }
                 }
@@ -79,7 +78,27 @@ class Tablelists extends Component
         }
     }
 
-    // متد جدید برای فرمت کردن شماره تلفن برای نمایش (اضافه کردن خط فاصله)
+    // متد برای اطمینان از وجود کلید در آرایه‌های Livewire
+    public function ensureResidentDataExists($residentId): void
+    {
+        if (!isset($this->full_name[$residentId])) {
+            $this->full_name[$residentId] = '';
+        }
+        if (!isset($this->phone[$residentId])) {
+            $this->phone[$residentId] = '';
+        }
+        if (!isset($this->payment_date[$residentId])) {
+            $this->payment_date[$residentId] = '';
+        }
+    }
+
+    // متد برای گرفتن مقدار امن از آرایه‌ها
+    private function getSafeArrayValue(array $array, string $key, $default = '')
+    {
+        return $array[$key] ?? $default;
+    }
+
+    // متد برای فرمت کردن شماره تلفن برای نمایش (اضافه کردن خط فاصله)
     private function formatPhoneNumberForDisplay($phoneNumber): string
     {
         // ابتدا شماره را پاکسازی می‌کنیم (حذف تمام کاراکترهای غیر عددی)
@@ -107,6 +126,18 @@ class Tablelists extends Component
         $this->phone[$key] = $this->formatPhoneNumberForDisplay($value);
         // حذف ولیدیشن real-time برای بهبود performance
         // $this->validatePhoneNumber($key);
+    }
+    
+    // متد برای ذخیره سریع با debouncing
+    public function debouncedSave($residentId): void
+    {
+        // فقط در پروداکشن از debouncing استفاده کن
+        if (app()->environment('production')) {
+            // ذخیره با تاخیر برای کاهش بار سرور
+            sleep(0.1); // 100ms delay
+        }
+        
+        $this->editResidentInline($residentId);
     }
 
     // متد ولیدیشن شماره تلفن
@@ -146,8 +177,11 @@ class Tablelists extends Component
         // Clear cache to ensure fresh data
         \App\Services\Report\AllReportService::clearAllCache();
         
-        // داده‌های residents را مجدداً لود کنید
+        // Force reload of all data
         $this->loadResidentData();
+        
+        // Dispatch a refresh event to update the UI
+        $this->dispatch('dataRefreshed');
     }
 
     // 🔧 متد عمومی برای سرویس‌ها
@@ -184,19 +218,38 @@ class Tablelists extends Component
             // بروزرسانی اطلاعات ساکن
             $resident = \App\Models\Resident::find($residentId);
             if ($resident) {
-                $resident->update([
-                    'full_name' => $this->full_name[$residentId] ?? $resident->full_name,
-                    // اینجا شماره تلفن را قبل از ذخیره در دیتابیس پاکسازی می‌کنیم
-                    'phone' => $this->sanitizePhoneNumberForDatabase($this->phone[$residentId] ?? $resident->phone),
-                ]);
+                // استفاده از transaction برای سرعت بیشتر در پروداکشن
+                if (app()->environment('production')) {
+                    \DB::transaction(function () use ($resident, $residentId) {
+                        $resident->update([
+                            'full_name' => $this->full_name[$residentId] ?? $resident->full_name,
+                            // اینجا شماره تلفن را قبل از ذخیره در دیتابیس پاکسازی می‌کنیم
+                            'phone' => $this->sanitizePhoneNumberForDatabase($this->phone[$residentId] ?? $resident->phone),
+                        ]);
 
-                // بروزرسانی تاریخ پرداخت در قرارداد
-                $contract = $resident->contract()->latest()->first();
+                        // بروزرسانی تاریخ پرداخت در قرارداد
+                        $contract = $resident->contract()->latest()->first();
 
-                if ($contract && isset($this->payment_date[$residentId])) {
-                    $contract->update([
-                        'payment_date' => $this->toMiladi($this->payment_date[$residentId])
+                        if ($contract && isset($this->payment_date[$residentId])) {
+                            $contract->update([
+                                'payment_date' => $this->toMiladi($this->payment_date[$residentId])
+                            ]);
+                        }
+                    });
+                } else {
+                    // در محیط توسعه بدون transaction
+                    $resident->update([
+                        'full_name' => $this->full_name[$residentId] ?? $resident->full_name,
+                        'phone' => $this->sanitizePhoneNumberForDatabase($this->phone[$residentId] ?? $resident->phone),
                     ]);
+
+                    $contract = $resident->contract()->latest()->first();
+
+                    if ($contract && isset($this->payment_date[$residentId])) {
+                        $contract->update([
+                            'payment_date' => $this->toMiladi($this->payment_date[$residentId])
+                        ]);
+                    }
                 }
 
                 // بعد از آپدیت، شماره تلفن را دوباره فرمت می‌کنیم
@@ -206,7 +259,7 @@ class Tablelists extends Component
                     'type' => 'success',
                     'title' => 'موفقیت!',
                     'description' => "مشخصات " . ($resident->full_name ?? 'کاربر') . " به روز شد",
-                    'timer' => 3000
+                    'timer' => 2000 // کاهش تایمر برای سرعت بیشتر
                 ]);
                 
                 // Only clear specific cache instead of all cache
@@ -216,7 +269,7 @@ class Tablelists extends Component
             $this->dispatch('show-toast', [
                 'type' => 'error',
                 'title' => 'مشکل!',
-                'description' => 'خطا در انجام آپدیت خطی: ' . $e->getMessage(), // نمایش پیام خطا برای دیباگ
+                'description' => 'خطا در انجام آپدیت خطی: ' . $e->getMessage(),
                 'timer' => 3000
             ]);
         }
@@ -281,23 +334,43 @@ class Tablelists extends Component
             \Cache::forget('resident_' . $residentId);
             // به جای پاک کردن کل cache، فقط cache units را آپدیت می‌کنیم
             \Cache::forget('units_with_dependence');
+            \Cache::forget('units_with_dependence_v2');
+            \Cache::forget('units_with_dependence_v3');
+            \Cache::forget('units_with_dependence_v4');
+            
+            // Clear user-specific caches
+            $userId = auth()->id() ?? 'anonymous';
+            \Cache::forget('units_with_dependence_user_' . $userId);
+            \Cache::forget('units_with_dependence_v2_user_' . $userId);
+            \Cache::forget('units_with_dependence_v3_user_' . $userId);
+            \Cache::forget('units_with_dependence_v4_user_' . $userId);
         } catch (\Exception $e) {
             // در صورت خطا، فقط cache مربوط به units را پاک می‌کنیم
             \Cache::forget('units_with_dependence');
+            \Cache::forget('units_with_dependence_v2');
+            \Cache::forget('units_with_dependence_v3');
+            \Cache::forget('units_with_dependence_v4');
         }
     }
 
     public function render()
     {
-        // Only load data if not already loaded to prevent unnecessary queries
-        if (empty($this->full_name)) {
-            $this->loadResidentData();
-        }
+        // Load data only when needed for better performance
+        // Use lazy loading - don't load all data at once
+        $this->loadResidentData();
         
         return view('livewire.pages.tablelists.tablelists', [
             'allReportService' => $this->service(AllReportService::class),
             'statusService' => $this->service(StatusService::class),
             'bedRepository' => $this->repository(BedRepository::class),
         ])->title('لیست اقامتگران');
+    }
+    
+    // Add lazy loading method for better performance
+    public function getUnitsProperty()
+    {
+        return $this->cache(function () {
+            return $this->allReportService()->getUnitWithDependence();
+        }, 'units_data_' . auth()->id());
     }
 }

@@ -5,29 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="b63ed7f2-ad38-4f28-9051-fd2d4dc37390" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/atlas2.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/atlas2.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/Livewire/Modals/ResidentModal.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/Livewire/Modals/ResidentModal.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/Livewire/Pages/BedStatistics/BedStatistics.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/Livewire/Pages/BedStatistics/BedStatistics.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/Livewire/Pages/Coolers/CoolerRoomManager.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/Livewire/Pages/Coolers/CoolerRoomManager.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/Livewire/Pages/Dormitory/DormitoryBuilder.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/Livewire/Pages/Dormitory/DormitoryBuilder.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/Livewire/Pages/Heaters/HeaterRoomManager.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/Livewire/Pages/Heaters/HeaterRoomManager.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/Livewire/Pages/Keys/KeyRoomTable.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/Livewire/Pages/Keys/KeyRoomTable.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/Livewire/Pages/Reports/ExitedResidents.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/Livewire/Pages/Reports/ExitedResidents.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/Livewire/Pages/Reports/ListCurrentResident.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/Livewire/Pages/Reports/ListCurrentResident.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/Livewire/Pages/Reservations/Reservations.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/Livewire/Pages/Reservations/Reservations.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/database/seeders/UserSeeder.php" beforeDir="false" afterPath="$PROJECT_DIR$/database/seeders/UserSeeder.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/resources/views/components/layouts/menu.blade.php" beforeDir="false" afterPath="$PROJECT_DIR$/resources/views/components/layouts/menu.blade.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/resources/views/livewire/modals/resident-modal.blade.php" beforeDir="false" afterPath="$PROJECT_DIR$/resources/views/livewire/modals/resident-modal.blade.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/resources/views/livewire/pages/home/partials/exists.blade.php" beforeDir="false" afterPath="$PROJECT_DIR$/resources/views/livewire/pages/home/partials/exists.blade.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/resources/views/livewire/pages/home/partials/expirs.blade.php" beforeDir="false" afterPath="$PROJECT_DIR$/resources/views/livewire/pages/home/partials/expirs.blade.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/resources/views/livewire/pages/home/partials/nightly.blade.php" beforeDir="false" afterPath="$PROJECT_DIR$/resources/views/livewire/pages/home/partials/nightly.blade.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/resources/views/livewire/pages/home/partials/payments.blade.php" beforeDir="false" afterPath="$PROJECT_DIR$/resources/views/livewire/pages/home/partials/payments.blade.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/resources/views/livewire/pages/home/partials/reservations.blade.php" beforeDir="false" afterPath="$PROJECT_DIR$/resources/views/livewire/pages/home/partials/reservations.blade.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/resources/views/livewire/pages/reports/exited-residents.blade.php" beforeDir="false" afterPath="$PROJECT_DIR$/resources/views/livewire/pages/reports/exited-residents.blade.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/resources/views/livewire/pages/tablelists/tablelists.blade.php" beforeDir="false" afterPath="$PROJECT_DIR$/resources/views/livewire/pages/tablelists/tablelists.blade.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/routes/web.php" beforeDir="false" afterPath="$PROJECT_DIR$/routes/web.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vite.config.js" beforeDir="false" afterPath="$PROJECT_DIR$/vite.config.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -46,18 +25,18 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
-  "lastFilter": {
-    "state": "OPEN",
-    "assignee": "amani7676"
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;amani7676&quot;
   }
-}]]></component>
-  <component name="GithubPullRequestsUISettings"><![CDATA[{
-  "selectedUrlAndAccountId": {
-    "url": "https://github.com/amani7676/Atlas2.git",
-    "accountId": "4b33c9a3-3a32-4bf7-aaf4-d46bf0144c69"
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/amani7676/Atlas2.git&quot;,
+    &quot;accountId&quot;: &quot;4b33c9a3-3a32-4bf7-aaf4-d46bf0144c69&quot;
   }
-}]]></component>
+}</component>
   <component name="PhpWorkspaceProjectConfiguration" interpreter_name="$PROJECT_DIR$/../../bin/php/php-8.3.16-Win32-vs16-x64/php.exe">
     <include_path>
       <path value="$PROJECT_DIR$/vendor/beberlei/assert" />
@@ -187,35 +166,31 @@
       <path value="$PROJECT_DIR$/vendor/alirahimi/livewire-persian-datepicker" />
     </include_path>
   </component>
-  <component name="ProjectColorInfo"><![CDATA[{
-  "customColor": "",
-  "associatedIndex": 2
-}]]></component>
+  <component name="ProjectColorInfo">{
+  &quot;customColor&quot;: &quot;&quot;,
+  &quot;associatedIndex&quot;: 2
+}</component>
   <component name="ProjectId" id="38yBiUCMAsypMLugvh0B5wgSzwX" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "git-widget-placeholder": "main",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RunManager">
-    <configuration default="true" type="ComposerRunConfigurationType" factoryName="Composer Script">
-      <option name="pathToComposerJson" value="$PROJECT_DIR$/composer.json" />
-      <method v="2" />
-    </configuration>
     <configuration name="Main" type="PHPUnitRunConfigurationType" factoryName="PHPUnit">
       <TestRunner configuration_file="$PROJECT_DIR$/phpunit.xml" scope="XML" use_alternative_configuration_file="true" />
       <method v="2" />
@@ -237,6 +212,7 @@
       <option name="presentableId" value="Default" />
       <updated>1769762059084</updated>
       <workItem from="1769762060716" duration="7782000" />
+      <workItem from="1770963346310" duration="3767000" />
     </task>
     <servers />
   </component>

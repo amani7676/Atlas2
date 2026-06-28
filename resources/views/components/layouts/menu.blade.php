@@ -92,7 +92,39 @@
                 </li>
 
                 <li class="nav-item dropdown material-dropdown">
-                    <a class="nav-link material-link dropdown-toggle {{ request()->routeIs('dormitory.builder') || request()->routeIs('coolers') || request()->routeIs('keys') || request()->routeIs('heaters') || request()->routeIs('Bed_statistic') || request()->routeIs('rules.manager') || request()->routeIs('resident.contacts') ? 'active' : '' }}" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false" data-ripple>
+                    <a class="nav-link material-link dropdown-toggle {{ request()->routeIs('amval') || request()->routeIs('amval.type') || request()->routeIs('amval.detail') ? 'active' : '' }}" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false" data-ripple>
+                        <span class="material-link-icon">
+                            <i class="fas fa-boxes"></i>
+                        </span>
+                        <span class="material-link-text">دارایی‌ها</span>
+                        <i class="fas fa-chevron-down dropdown-arrow ms-1"></i>
+                    </a>
+                    <ul class="dropdown-menu material-dropdown-menu">
+                        <li>
+                            <a class="dropdown-item material-dropdown-item {{ request()->routeIs('amval') ? 'active' : '' }}" href="{{ route('amval') }}" data-ripple>
+                                <i class="fas fa-list me-2"></i>
+                                مدیریت انواع دارایی‌ها
+                            </a>
+                        </li>
+                        @php
+                            use App\Models\AssetType;
+                            $assetTypes = AssetType::active()->get();
+                        @endphp
+                        @if($assetTypes->isNotEmpty())
+                            <li><hr class="dropdown-divider"></li>
+                            @foreach($assetTypes as $type)
+                                <li>
+                                    <a class="dropdown-item material-dropdown-item {{ request()->routeIs('amval.type') && request()->route('assetTypeId') == $type->id ? 'active' : '' }}" href="{{ route('amval.type', $type->id) }}" data-ripple>
+                                        <i class="{{ $type->icon ?? 'fas fa-box' }} me-2"></i>
+                                        {{ $type->name }}
+                                    </a>
+                                </li>
+                            @endforeach
+                        @endif
+                    </ul>
+                </li>
+                <li class="nav-item dropdown material-dropdown">
+                    <a class="nav-link material-link dropdown-toggle {{ request()->routeIs('dormitory.builder') || request()->routeIs('Bed_statistic') || request()->routeIs('rules.manager') || request()->routeIs('resident.contacts') ? 'active' : '' }}" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false" data-ripple>
                         <span class="material-link-icon">
                             <i class="fas fa-ellipsis-h"></i>
                         </span>
@@ -104,24 +136,6 @@
                             <a class="dropdown-item material-dropdown-item {{ request()->routeIs('dormitory.builder') ? 'active' : '' }}" href="{{ route('dormitory.builder') }}" data-ripple>
                                 <i class="fas fa-building me-2"></i>
                                 ساخت خوابگاه
-                            </a>
-                        </li>
-                        <li>
-                            <a class="dropdown-item material-dropdown-item {{ request()->routeIs('coolers') ? 'active' : '' }}" href="{{ route("coolers") }}" data-ripple>
-                                <i class="fa-solid fa-fan me-2"></i>
-                                کولرها
-                            </a>
-                        </li>
-                        <li>
-                            <a class="dropdown-item material-dropdown-item {{ request()->routeIs('keys') ? 'active' : '' }}" href="{{ route('keys') }}" data-ripple>
-                                <i class="fa-solid fa-key me-2"></i>
-                                کلیدها
-                            </a>
-                        </li>
-                        <li>
-                            <a class="dropdown-item material-dropdown-item {{ request()->routeIs('heaters') ? 'active' : '' }}" href="{{ route('heaters') }}" data-ripple>
-                                <i class="fas fa-fire me-2"></i>
-                                هیترها
                             </a>
                         </li>
                         <li>
@@ -150,7 +164,20 @@
                         </li>
                     </ul>
                 </li>
+
+                <li class="nav-item">
+                    <a class="nav-link material-link logout-link" href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();" data-ripple>
+                        <span class="material-link-icon">
+                            <i class="fas fa-sign-out-alt"></i>
+                        </span>
+                        <span class="material-link-text">خروج</span>
+                    </a>
+                </li>
             </ul>
+
+            <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+                @csrf
+            </form>
 
             <!-- SMS Credit Display -->
             <div class="material-sms-credit-container me-3">
@@ -279,6 +306,19 @@
 
 .sms-credit-circle.loading {
     animation: spin 1s linear infinite;
+}
+
+/* Logout Link Style */
+.logout-link {
+    color: #dc3545 !important;
+}
+
+.logout-link:hover {
+    background: rgba(220, 53, 69, 0.1) !important;
+}
+
+.logout-link .material-link-icon {
+    color: #dc3545 !important;
 }
 </style>
 

@@ -44,9 +44,9 @@ Route::middleware(['auth.custom'])->group(function () {
     Route::get("/Reservations", Reservations::class)->name('reservations');
     Route::get("/report/list-current-resident", \App\Livewire\Pages\Reports\ListCurrentResident::class)->name('report.list_current_resident');
     Route::get("/report/exited-residents", \App\Livewire\Pages\Reports\ExitedResidents::class)->name('report.exited_residents');
-    Route::get('/coolers', \App\Livewire\Pages\Coolers\CoolerRoomManager::class)->name('coolers');
-    Route::get('/keys', \App\Livewire\Pages\Keys\KeyRoomTable::class)->name('keys');
-    Route::get('/heaters', \App\Livewire\Pages\Heaters\HeaterRoomManager::class)->name('heaters');
+    Route::get('/amval', \App\Livewire\Pages\Assets\AssetManager::class)->name('amval')->withoutMiddleware(['auth.custom']);
+    Route::get('/amval-type/{assetTypeId}', \App\Livewire\Pages\Assets\AssetTypeDetail::class)->name('amval.type')->withoutMiddleware(['auth.custom']);
+    Route::get('/amval-detail/{assetId}', \App\Livewire\Pages\Assets\AssetDetail::class)->name('amval.detail')->withoutMiddleware(['auth.custom']);
     Route::get("/report/chart-one", \App\Livewire\Pages\Reports\ChartOne::class)->name('report.chart_one');
     Route::get('/dormitory-builder', \App\Livewire\Pages\Dormitory\DormitoryBuilder::class)->name('dormitory.builder');
     Route::get('/message-system', \App\Livewire\MessageSystem::class)->name('message.system');

@@ -168,10 +168,10 @@
                             @foreach($reserves as $reserve)
                                 <tr>
                                     <td>
-                                        <strong>{{ $reserve->full_name }}</strong>
+                                        <strong class="reservation-name">{{ $reserve->full_name }}</strong>
                                     </td>
                                     <td>
-                                        <span class="text-muted">{{ $reserve->phone }}</span>
+                                        <span class="text-muted reservation-phone">{{ $reserve->formatted_phone }}</span>
                                     </td>
 
                                     <td>
@@ -275,6 +275,16 @@
 
             .action-buttons {
                 white-space: nowrap;
+            }
+
+            .reservation-name {
+                font-size: 16px;
+                font-weight: 700;
+            }
+
+            .reservation-phone {
+                font-size: 15px;
+                font-weight: 600;
             }
 
             /* موبایل (تا 576px) */

@@ -42,4 +42,15 @@ class Rezerve extends Model
             ? Jalalian::fromDateTime($this->updated_at)->format('Y/m/d')
             : null;
     }
+
+    public function getFormattedPhoneAttribute()
+    {
+        $cleanPhone = preg_replace('/\D/', '', $this->phone);
+        
+        if (strlen($cleanPhone) == 11 && substr($cleanPhone, 0, 1) == '0') {
+            return substr($cleanPhone, 0, 4) . '-' . substr($cleanPhone, 4, 3) . '-' . substr($cleanPhone, 7, 4);
+        }
+        
+        return $this->phone;
+    }
 }

@@ -63,26 +63,26 @@ class AssetTypeDetail extends Component
             $query->where(function ($q) {
                 $q->where('name', 'like', '%' . $this->searchAsset . '%')
                   ->orWhere('number', 'like', '%' . $this->searchAsset . '%')
-                  ->orWhere('model', 'like', '%' . $this->searchAsset . '%')
-                  ->orWhereHas('rooms', function ($roomQuery) {
-                      $roomQuery->where('name', 'like', '%' . $this->searchAsset . '%');
-                  });
+                  ->orWhere('model', 'like', '%' . $this->searchAsset . '%');
             });
         }
 
         if ($this->searchRoom) {
             $query->whereHas('rooms', function ($roomQuery) {
-                $roomQuery->where(function ($q) {
-                    $q->where('name', 'like', '%' . $this->searchRoom . '%')
-                      ->orWhere('code', 'like', '%' . $this->searchRoom . '%');
-                });
-            });
+                $roomQuery->where('name', 'like', '%' . $this->searchRoom . '%')
+                          ->orWhere('code', 'like', '%' . $this->searchRoom . '%');
+            })->with(['rooms' => function ($roomQuery) {
+                $roomQuery->where('name', 'like', '%' . $this->searchRoom . '%')
+                          ->orWhere('code', 'like', '%' . $this->searchRoom . '%');
+            }]);
         }
 
         if ($this->filterUnit) {
             $query->whereHas('rooms', function ($roomQuery) {
                 $roomQuery->where('unit_id', $this->filterUnit);
-            });
+            })->with(['rooms' => function ($roomQuery) {
+                $roomQuery->where('unit_id', $this->filterUnit);
+            }]);
         }
 
         if ($this->filterStatus) {
@@ -128,26 +128,26 @@ class AssetTypeDetail extends Component
             $query->where(function ($q) {
                 $q->where('name', 'like', '%' . $this->searchAsset . '%')
                   ->orWhere('number', 'like', '%' . $this->searchAsset . '%')
-                  ->orWhere('model', 'like', '%' . $this->searchAsset . '%')
-                  ->orWhereHas('rooms', function ($roomQuery) {
-                      $roomQuery->where('name', 'like', '%' . $this->searchAsset . '%');
-                  });
+                  ->orWhere('model', 'like', '%' . $this->searchAsset . '%');
             });
         }
 
         if ($this->searchRoom) {
             $query->whereHas('rooms', function ($roomQuery) {
-                $roomQuery->where(function ($q) {
-                    $q->where('name', 'like', '%' . $this->searchRoom . '%')
-                      ->orWhere('code', 'like', '%' . $this->searchRoom . '%');
-                });
-            });
+                $roomQuery->where('name', 'like', '%' . $this->searchRoom . '%')
+                          ->orWhere('code', 'like', '%' . $this->searchRoom . '%');
+            })->with(['rooms' => function ($roomQuery) {
+                $roomQuery->where('name', 'like', '%' . $this->searchRoom . '%')
+                          ->orWhere('code', 'like', '%' . $this->searchRoom . '%');
+            }]);
         }
 
         if ($this->filterUnit) {
             $query->whereHas('rooms', function ($roomQuery) {
                 $roomQuery->where('unit_id', $this->filterUnit);
-            });
+            })->with(['rooms' => function ($roomQuery) {
+                $roomQuery->where('unit_id', $this->filterUnit);
+            }]);
         }
 
         if ($this->filterStatus) {

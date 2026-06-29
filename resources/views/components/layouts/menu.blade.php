@@ -21,7 +21,7 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link material-link {{ request()->routeIs('table_list') ? 'active' : '' }}" href="{{ route('table_list') }}" data-ripple>
+                    <a class="nav-link material-link {{ request()->routeIs('table_list') ? 'active' : '' }}" href="{{ route('table_list') }}">
                         <span class="material-link-icon">
                             <i class="fas fa-list"></i>
                         </span>
@@ -68,30 +68,6 @@
                 </li>
 
                 <li class="nav-item dropdown material-dropdown">
-                    <a class="nav-link material-link dropdown-toggle {{ request()->routeIs('message.system') || request()->routeIs('message.sender') ? 'active' : '' }}" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false" data-ripple>
-                        <span class="material-link-icon">
-                            <i class="fas fa-envelope"></i>
-                        </span>
-                        <span class="material-link-text">پیام‌ها</span>
-                        <i class="fas fa-chevron-down dropdown-arrow ms-1"></i>
-                    </a>
-                    <ul class="dropdown-menu material-dropdown-menu">
-                        <li>
-                            <a class="dropdown-item material-dropdown-item {{ request()->routeIs('message.system') ? 'active' : '' }}" href="{{ route('message.system') }}" data-ripple>
-                                <i class="fas fa-cog me-2"></i>
-                                سیستم پیام
-                            </a>
-                        </li>
-                        <li>
-                            <a class="dropdown-item material-dropdown-item {{ request()->routeIs('message.sender') ? 'active' : '' }}" href="{{ route('message.sender') }}" data-ripple>
-                                <i class="fas fa-paper-plane me-2"></i>
-                                ارسال پیام
-                            </a>
-                        </li>
-                    </ul>
-                </li>
-
-                <li class="nav-item dropdown material-dropdown">
                     <a class="nav-link material-link dropdown-toggle {{ request()->routeIs('amval') || request()->routeIs('amval.type') || request()->routeIs('amval.detail') ? 'active' : '' }}" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false" data-ripple>
                         <span class="material-link-icon">
                             <i class="fas fa-boxes"></i>
@@ -124,7 +100,7 @@
                     </ul>
                 </li>
                 <li class="nav-item dropdown material-dropdown">
-                    <a class="nav-link material-link dropdown-toggle {{ request()->routeIs('dormitory.builder') || request()->routeIs('Bed_statistic') || request()->routeIs('rules.manager') || request()->routeIs('resident.contacts') ? 'active' : '' }}" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false" data-ripple>
+                    <a class="nav-link material-link dropdown-toggle {{ request()->routeIs('dormitory.builder') || request()->routeIs('Bed_statistic') || request()->routeIs('rules.manager') || request()->routeIs('resident.contacts') || request()->routeIs('message.system') || request()->routeIs('message.sender') ? 'active' : '' }}" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false" data-ripple>
                         <span class="material-link-icon">
                             <i class="fas fa-ellipsis-h"></i>
                         </span>
@@ -160,6 +136,19 @@
                             <a class="dropdown-item material-dropdown-item {{ request()->routeIs('resident.contacts') ? 'active' : '' }}" href="{{ route('resident.contacts') }}" data-ripple>
                                 <i class="fas fa-phone-alt me-2"></i>
                                 شماره تماس اقامتگران
+                            </a>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <a class="dropdown-item material-dropdown-item {{ request()->routeIs('message.system') ? 'active' : '' }}" href="{{ route('message.system') }}" data-ripple>
+                                <i class="fas fa-cog me-2"></i>
+                                سیستم پیام
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item material-dropdown-item {{ request()->routeIs('message.sender') ? 'active' : '' }}" href="{{ route('message.sender') }}" data-ripple>
+                                <i class="fas fa-paper-plane me-2"></i>
+                                ارسال پیام
                             </a>
                         </li>
                     </ul>
@@ -319,6 +308,101 @@
 
 .logout-link .material-link-icon {
     color: #dc3545 !important;
+}
+
+/* Mobile Menu Improvements */
+@media (max-width: 991.98px) {
+    .navbar-collapse {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        margin-top: 15px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    }
+    
+    .material-nav {
+        flex-direction: column;
+        width: 100%;
+        gap: 4px;
+    }
+    
+    .nav-item {
+        width: 100%;
+    }
+    
+    .material-link {
+        display: flex;
+        align-items: center;
+        padding: 12px 16px;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+        width: 100%;
+    }
+    
+    .material-link:hover {
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+    }
+    
+    .material-link.active {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+    
+    .material-link.active .material-link-icon {
+        color: white;
+    }
+    
+    .material-dropdown-menu {
+        position: static !important;
+        transform: none !important;
+        width: 100%;
+        margin-top: 0;
+        padding: 8px;
+        background: #f8f9fa;
+        border-radius: 8px;
+        box-shadow: none;
+        border: 1px solid #e9ecef;
+        display: none;
+    }
+    
+    .show > .material-dropdown-menu {
+        display: block;
+        margin-top: 4px;
+    }
+    
+    .dropdown-arrow {
+        display: none;
+    }
+    
+    .material-dropdown-item {
+        padding: 8px 16px;
+        border-radius: 6px;
+        margin-bottom: 2px;
+    }
+    
+    .material-dropdown-item:hover {
+        background: rgba(102, 126, 234, 0.1);
+    }
+    
+    .material-dropdown-item.active {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+    
+    .material-dropdown-item.active i {
+        color: white;
+    }
+    
+    .material-search-container {
+        order: -1;
+        margin-bottom: 15px;
+    }
+    
+    .material-sms-credit-container {
+        order: -2;
+        margin-bottom: 15px;
+        margin-right: 0;
+    }
 }
 </style>
 

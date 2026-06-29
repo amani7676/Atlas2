@@ -503,39 +503,36 @@ class DetailsChangesModal extends Component
     {
         DB::transaction(function () use ($idResident) {
             try {
-                // 1. پیدا کردن اقامتگر
-                $resident = Resident::findOrFail($idResident);
-
-                // 2. حذف نرم یادداشت‌های مرتبط
-                $resident->notes()->delete();
-
-                // 3. غیرفعال کردن قرارداد مرتبط
-                if ($resident->contract) {
-                    $contract = $resident->contract;
-                    //تغییر وضعیت قرار داد به خروج
-                    $contract->update(['state' => 'exit']);
-
-                    // 4. آزاد کردن تخت
-                    if ($contract->bed) {
-                        $contract->bed()->update([
-                            'state_ratio_resident' => 'empty',
-                        ]);
-                    }
-
-                    // 5. حذف نرم قرارداد
-                    $contract->delete();
+                // 1. پیدا کردن اقامتگر با قرارداد و تخت
+                $resident = Resident::with(['contract.bed'])->findOrFail($idResident);
+                
+                // ذخیره اطلاعات تخت قبل از حذف
+                $bedId = null;
+                if ($resident->contract && $resident->contract->bed) {
+                    $bedId = $resident->contract->bed->id;
                 }
 
-                // 6. حذف نرم اقامتگر
-                $resident->delete();
+                // 2. استفاده از سرویس آرشیو برای انتقال داده‌ها
+                $archiveService = new \App\Services\ArchiveService();
+                $archiveResult = $archiveService->archiveResident($resident->id);
 
+                if (!$archiveResult) {
+                    throw new \Exception('خطا در آرشیو کردن اقامتگر');
+                }
+
+                // 3. آزاد کردن تخت (با استفاده از bedId ذخیره شده)
+                if ($bedId) {
+                    \App\Models\Bed::where('id', $bedId)->update([
+                        'state_ratio_resident' => 'empty',
+                    ]);
+                }
 
                 $this->closeModal();
 
                 $this->dispatch('show-toast', [
                     'type' => 'success',
                     'title' => 'موفقیت',
-                    'description' => $resident->full_name . ' و اطلاعات مرتبط با موفقیت غیرفعال شدند',
+                    'description' => $resident->full_name . ' با موفقیت آرشیو شد',
                     'timer' => 3000
                 ]);
                 $this->dispatch('residentDataUpdated');
@@ -545,7 +542,7 @@ class DetailsChangesModal extends Component
                 $this->dispatch('show-toast', [
                     'type' => 'error',
                     'title' => 'خطا',
-                    'description' => 'خطا در غیرفعال کردن: ' . $e->getMessage(),
+                    'description' => 'خطا در آرشیو کردن: ' . $e->getMessage(),
                     'timer' => 4000
                 ]);
             }

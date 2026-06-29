@@ -203,12 +203,9 @@
                                                 اتاق‌های متصل:
                                             </p>
                                             <div class="asset-rooms-list">
-                                                @foreach($asset->rooms->take(3) as $room)
+                                                @foreach($asset->rooms as $room)
                                                     <span class="asset-room-badge">{{ $room->name }}</span>
                                                 @endforeach
-                                                @if($asset->rooms->count() > 3)
-                                                    <span class="asset-room-more">+{{ $asset->rooms->count() - 3 }}</span>
-                                                @endif
                                             </div>
                                         </div>
                                     @endif
@@ -809,12 +806,19 @@
         }
 
         .asset-room-badge {
-            background: rgba(255, 255, 255, 0.6);
-            padding: 4px 10px;
-            border-radius: 12px;
-            font-size: 11px;
-            font-weight: 600;
-            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 700;
+            color: white;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+            transition: all 0.3s;
+        }
+
+        .asset-room-badge:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
         }
 
         .asset-room-more {

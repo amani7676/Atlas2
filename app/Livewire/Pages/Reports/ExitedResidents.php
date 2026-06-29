@@ -168,83 +168,94 @@ class ExitedResidents extends Component
 
     public function getFilteredResidents()
     {
-        // دریافت اقامتگران شامل deleted ones
-        $residents = \App\Models\Resident::withTrashed()
-            ->with([
-                'contract' => function ($query) {
-                    $query->withTrashed()->with(['bed.room.unit']);
-                },
-                'notes'
-            ])
-            ->get()
-            ->map(function ($resident) {
-                $contract = $resident->contract;
+        // دریافت اقامتگران از جدول archive_data
+        $archivedResidents = \App\Models\ArchiveData::all()
+            ->map(function ($archive) {
+                // فرمت کردن شماره تلفن
+                $phone = $archive->phone;
+                if ($phone) {
+                    $phone = preg_replace('/^(\d{4})(\d{3})(\d{4})$/', '$1-$2-$3', $phone);
+                }
+                
+                // تبدیل تاریخ‌ها به شمسی
+                $paymentDateJalali = null;
+                if ($archive->payment_date) {
+                    try {
+                        $paymentDateJalali = \Morilog\Jalali\Jalalian::fromDateTime($archive->payment_date)->format('Y/m/d');
+                    } catch (\Exception $e) {}
+                }
+                
+                $startDateJalali = null;
+                if ($archive->start_date) {
+                    try {
+                        $startDateJalali = \Morilog\Jalali\Jalalian::fromDateTime($archive->start_date)->format('Y/m/d');
+                    } catch (\Exception $e) {}
+                }
+                
+                $endDateJalali = null;
+                if ($archive->end_date) {
+                    try {
+                        $endDateJalali = \Morilog\Jalali\Jalalian::fromDateTime($archive->end_date)->format('Y/m/d');
+                    } catch (\Exception $e) {}
+                }
+                
+                $archivedAtJalali = null;
+                if ($archive->archived_at) {
+                    try {
+                        $archivedAtJalali = \Morilog\Jalali\Jalalian::fromDateTime($archive->archived_at)->format('Y/m/d');
+                    } catch (\Exception $e) {}
+                }
                 
                 return [
                     'resident' => [
-                        'id' => $resident->id,
-                        'full_name' => $resident->full_name,
-                        'phone' => $resident->formatted_phone,
-                        'age' => $resident->age,
-                        'job' => $resident->job,
-                        'referral_source' => $resident->referral_source,
-                        'document' => $resident->document,
-                        'form' => $resident->form,
-                        'rent' => $resident->rent,
-                        'trust' => $resident->trust,
-                        'deleted_at' => $resident->deleted_at ? \Morilog\Jalali\Jalalian::fromDateTime($resident->deleted_at)->format('Y/m/d') : null,
+                        'id' => $archive->id,
+                        'full_name' => $archive->full_name,
+                        'phone' => $phone,
+                        'age' => $archive->age,
+                        'job' => $archive->job,
+                        'referral_source' => $archive->referral_source,
+                        'document' => $archive->document,
+                        'form' => $archive->form,
+                        'rent' => $archive->rent,
+                        'trust' => $archive->trust,
+                        'deleted_at' => $archivedAtJalali,
                     ],
-                    'contract' => $contract ? [
-                        'id' => $contract->id,
-                        'payment_date' => $contract->payment_date_jalali,
-                        'day_since_payment' => $this->getAllReportService()->getDaysSincePayment($contract->payment_date),
-                        'start_date' => $contract->start_date_jalali,
-                        'end_date' => $contract->end_date_jalali,
-                        'state' => $contract->state,
-                        'deleted_at' => $contract->deleted_at ? \Morilog\Jalali\Jalalian::fromDateTime($contract->deleted_at)->format('Y/m/d') : null,
-                    ] : null,
-                    'bed' => $contract?->bed ? [
-                        'id' => $contract->bed->id,
-                        'name' => $contract->bed->name,
-                        'state_ratio_resident' => $contract->bed->state_ratio_resident,
-                        'state' => $contract->bed->state,
-                        'desc' => $contract->bed->desc,
-                    ] : null,
-                    'room' => $contract?->bed?->room ? [
-                        'id' => $contract->bed->room->id,
-                        'name' => $contract->bed->room->name,
-                        'bed_count' => $contract->bed->room->bed_count,
-                        'desc' => $contract->bed->room->desc,
-                    ] : null,
-                    'unit' => $contract?->bed?->room?->unit ? [
-                        'id' => $contract->bed->room->unit->id,
-                        'name' => $contract->bed->room->unit->name,
-                        'code' => $contract->bed->room->unit->code,
-                        'desc' => $contract->bed->room->unit->desc,
-                    ] : null,
-                    'notes' => $resident->notes->map(function ($note) {
-                        return [
-                            'id' => $note->id,
-                            'type' => $note->type,
-                            'note' => $note->note,
-                            'created_at' => $note->created_at,
-                        ];
-                    }),
+                    'contract' => [
+                        'id' => null,
+                        'payment_date' => $paymentDateJalali,
+                        'day_since_payment' => $archive->payment_date ? $this->getAllReportService()->getDaysSincePayment($archive->payment_date) : null,
+                        'start_date' => $startDateJalali,
+                        'end_date' => $endDateJalali,
+                        'state' => $archive->state,
+                        'deleted_at' => $archivedAtJalali,
+                    ],
+                    'bed' => [
+                        'id' => $archive->bed_id,
+                        'name' => $archive->bed_name,
+                        'state_ratio_resident' => null,
+                        'state' => null,
+                        'desc' => null,
+                    ],
+                    'room' => [
+                        'id' => null,
+                        'name' => $archive->room_name,
+                        'bed_count' => null,
+                        'desc' => null,
+                    ],
+                    'unit' => [
+                        'id' => null,
+                        'name' => $archive->unit_name,
+                        'code' => null,
+                        'desc' => null,
+                    ],
+                    'notes' => [],
                 ];
             });
 
-        // فیلتر بر اساس state = 'leaving' یا deleted_at
-        $residents = collect($residents)->filter(function ($data) {
-            // اگر contract deleted شده باشد
-            if ($data['contract'] && isset($data['contract']['deleted_at']) && $data['contract']['deleted_at']) {
-                return true;
-            }
-            // اگر resident deleted شده باشد
-            if (isset($data['resident']['deleted_at']) && $data['resident']['deleted_at']) {
-                return true;
-            }
-            // اگر state = 'leaving' باشد
-            return $data['contract'] && $data['contract']['state'] === 'leaving';
+        // فیلتر بر اساس archived_at
+        $residents = collect($archivedResidents)->filter(function ($data) {
+            // تمام رکوردهای archive_data نمایش داده شوند
+            return true;
         });
 
         // تعیین تاریخ شروع و پایان برای فیلتر
@@ -264,10 +275,10 @@ class ExitedResidents extends Component
             $firstDate = null;
             foreach ($residents as $data) {
                 $dateToCheck = null;
-                // اول deleted_at را چک می‌کنیم
-                if ($data['contract'] && isset($data['contract']['deleted_at']) && $data['contract']['deleted_at']) {
+                // archived_at را چک می‌کنیم
+                if (isset($data['resident']['deleted_at']) && $data['resident']['deleted_at']) {
                     try {
-                        $dateToCheck = $this->toMiladi($data['contract']['deleted_at']);
+                        $dateToCheck = $this->toMiladi($data['resident']['deleted_at']);
                     } catch (\Exception $e) {
                         // اگر نتوانستیم، از end_date استفاده می‌کنیم
                         if ($data['contract']['end_date']) {
@@ -313,11 +324,11 @@ class ExitedResidents extends Component
         // اعمال فیلتر تاریخ
         if ($startDateCarbon || $endDateCarbon) {
             $residents = $residents->filter(function ($data) use ($startDateCarbon, $endDateCarbon) {
-                // اگر contract deleted شده باشد، از deleted_at استفاده می‌کنیم
+                // archived_at را استفاده می‌کنیم
                 $dateToCheck = null;
-                if ($data['contract'] && isset($data['contract']['deleted_at']) && $data['contract']['deleted_at']) {
+                if (isset($data['resident']['deleted_at']) && $data['resident']['deleted_at']) {
                     try {
-                        $dateToCheck = $this->toMiladi($data['contract']['deleted_at']);
+                        $dateToCheck = $this->toMiladi($data['resident']['deleted_at']);
                     } catch (\Exception $e) {
                         // اگر نتوانستیم تبدیل کنیم، از end_date استفاده می‌کنیم
                         if ($data['contract']['end_date']) {
@@ -453,33 +464,33 @@ class ExitedResidents extends Component
         }
     }
 
-    public function deleteResident($residentId)
+    public function deleteResident($archiveId)
     {
         try {
-            // Find the resident (including soft deleted ones)
-            $resident = \App\Models\Resident::withTrashed()->find($residentId);
+            // Find the archive record
+            $archive = \App\Models\ArchiveData::find($archiveId);
             
-            if (!$resident) {
+            if (!$archive) {
                 $this->dispatch('show-toast', [
                     'type' => 'error',
                     'title' => 'خطا!',
-                    'description' => 'اقامتگر مورد نظر یافت نشد',
+                    'description' => 'رکورد آرشیو مورد نظر یافت نشد',
                     'timer' => 3000
                 ]);
                 return;
             }
 
             // Get resident name for confirmation message
-            $residentName = $resident->full_name;
+            $residentName = $archive->full_name;
 
-            // Force delete the resident (permanent deletion)
-            $resident->forceDelete();
+            // Delete the archive record
+            $archive->delete();
 
             // Show success message
             $this->dispatch('show-toast', [
                 'type' => 'success',
                 'title' => 'حذف شد!',
-                'description' => "اقامتگر {$residentName} با موفقیت حذف شد",
+                'description' => "رکورد آرشیو {$residentName} با موفقیت حذف شد",
                 'timer' => 3000
             ]);
 
@@ -487,7 +498,7 @@ class ExitedResidents extends Component
             $this->dispatch('show-toast', [
                 'type' => 'error',
                 'title' => 'خطا!',
-                'description' => 'خطایی در حذف اقامتگر رخ داد: ' . $e->getMessage(),
+                'description' => 'خطایی در حذف رکورد آرشیو رخ داد: ' . $e->getMessage(),
                 'timer' => 3000
             ]);
         }

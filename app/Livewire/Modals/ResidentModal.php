@@ -441,6 +441,32 @@ class ResidentModal extends Component
                 ]);
             }
 
+            // اگر وضعیت به exit تغییر کرد، آرشیو کن
+            if ($this->state_modal === 'exit') {
+                $archiveService = new \App\Services\ArchiveService();
+                $archiveResult = $archiveService->archiveResident($resident->id);
+                
+                if ($archiveResult) {
+                    $this->dispatch('show-toast', [
+                        'type' => 'success',
+                        'title' => 'موفقیت!',
+                        'description' => "اقامتگر {$this->full_name_modal} با موفقیت آرشیو شد",
+                        'timer' => 4000
+                    ]);
+                } else {
+                    $this->dispatch('show-toast', [
+                        'type' => 'error',
+                        'title' => 'خطا!',
+                        'description' => "خطا در آرشیو کردن اقامتگر",
+                        'timer' => 4000
+                    ]);
+                }
+                
+                $this->dispatch('residentAdded');
+                \App\Services\Report\AllReportService::clearAllCache();
+                return;
+            }
+
             \App\Models\Bed::where('id', $contract->bed_id)
                 ->update([
                     'state' => 'active',

@@ -305,6 +305,20 @@
                                 @enderror
                             </div>
 
+                            <div class="mb-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" 
+                                           wire:model="unitIsDisplayable"
+                                           id="unitIsDisplayable"
+                                           style="width: 3em; height: 1.5em;">
+                                    <label class="form-check-label fw-bold" for="unitIsDisplayable">
+                                        <i class="fas fa-eye me-2 text-primary"></i>
+                                        نمایش در لیست اقامتگران
+                                    </label>
+                                </div>
+                                <small class="form-text text-muted">اگر غیرفعال باشد، این واحد در لیست اقامتگران نمایش داده نمی‌شود</small>
+                            </div>
+
                             <div class="d-flex gap-2 justify-content-end mt-4">
                                 <button type="button" class="btn btn-secondary btn-lg" wire:click="closeUnitModal" style="border-radius: 10px;">
                                     <i class="fas fa-times me-2"></i>
@@ -428,10 +442,11 @@
                                 <input type="number" 
                                        class="form-control form-control-lg @error('bedCount') is-invalid @enderror" 
                                        wire:model="bedCount"
-                                       min="1"
+                                       min="0"
                                        max="100"
-                                       placeholder="مثال: 2"
+                                       placeholder="مثال: 2 (0 برای بدون تخت)"
                                        style="border-radius: 10px;">
+                                <small class="form-text text-muted">می‌توانید 0 وارد کنید برای اتاق بدون تخت</small>
                                 @error('bedCount')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
@@ -450,6 +465,20 @@
                                 @error('roomDesc')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
+                            </div>
+
+                            <div class="mb-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" 
+                                           wire:model="roomIsDisplayable"
+                                           id="roomIsDisplayable"
+                                           style="width: 3em; height: 1.5em;">
+                                    <label class="form-check-label fw-bold" for="roomIsDisplayable">
+                                        <i class="fas fa-eye me-2 text-primary"></i>
+                                        نمایش در لیست اقامتگران
+                                    </label>
+                                </div>
+                                <small class="form-text text-muted">اگر غیرفعال باشد، این اتاق در لیست اقامتگران نمایش داده نمی‌شود</small>
                             </div>
 
                             <div class="d-flex gap-2 justify-content-end mt-4">

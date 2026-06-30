@@ -15,7 +15,14 @@ class Room extends Model
         'unit_id',
         'bed_count',
         'desc',
-        'color'
+        'color',
+        'is_displayable'
+    ];
+
+    protected $casts = [
+        'bed_count' => 'integer',
+        'code' => 'integer',
+        'is_displayable' => 'boolean',
     ];
 
     public function unit()
@@ -45,12 +52,6 @@ class Room extends Model
     {
         return $this->hasOne(Heater::class);
     }
-
-
-    protected $casts = [
-        'bed_count' => 'integer',
-        'code' => 'integer'
-    ];
 
     /**
      * Get connection details for a specific cooler

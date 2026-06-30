@@ -204,7 +204,12 @@
                                             </p>
                                             <div class="asset-rooms-list">
                                                 @foreach($asset->rooms as $room)
-                                                    <span class="asset-room-badge">{{ $room->name }}</span>
+                                                    <div class="asset-room-badge-wrapper">
+                                                        <span class="asset-room-badge">{{ $room->name }}</span>
+                                                        <button onclick="if(confirm('آیا از حذف اتاق {{ $room->name }} اطمینان دارید؟')) { @this.removeRoomFromAsset({{ $asset->id }}, {{ $room->id }}) }" class="asset-room-delete-btn" title="حذف این اتاق">
+                                                            <i class="fas fa-times"></i>
+                                                        </button>
+                                                    </div>
                                                 @endforeach
                                             </div>
                                         </div>
@@ -819,6 +824,38 @@
         .asset-room-badge:hover {
             transform: scale(1.05);
             box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .asset-room-badge-wrapper {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            margin: 2px;
+        }
+
+        .asset-room-delete-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 10px;
+            padding: 0;
+        }
+
+        .asset-room-delete-btn:hover {
+            background: #c82333;
+            transform: scale(1.2);
+        }
+
+        .asset-room-delete-btn i {
+            pointer-events: none;
         }
 
         .asset-room-more {

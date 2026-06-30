@@ -18,7 +18,7 @@ class AssetDetail extends Component
     public $connections;
 
     // Form properties for Connection
-    public $selectedRoom = null;
+    public $selectedRoom = [];
     public $connectionType = 'direct';
     public $connectedAt = '';
     public $notes = '';
@@ -189,12 +189,25 @@ class AssetDetail extends Component
         $this->showConnectionModal = true;
     }
 
+    public function editConnections()
+    {
+        $this->resetConnectionForm();
+        // Load all currently connected rooms as array
+        $roomIds = $this->asset->rooms()->pluck('rooms.id')->toArray();
+        $this->selectedRoom = array_values($roomIds);
+        $this->editingConnection = true;
+        $this->connectedAt = now()->format('Y-m-d');
+        $this->showConnectionModal = true;
+    }
+
     public function editConnection($connectionId)
     {
         $connection = DB::table('asset_room')->find($connectionId);
         if ($connection) {
             $this->editingConnection = $connectionId;
-            $this->selectedRoom = $connection->room_id;
+            // Load all currently connected rooms as array with sequential integer keys
+            $roomIds = $this->asset->rooms()->pluck('id')->toArray();
+            $this->selectedRoom = array_values($roomIds);
             $this->connectionType = $connection->connection_type;
             $this->connectedAt = $connection->connected_at;
             $this->notes = $connection->notes;
@@ -204,39 +217,62 @@ class AssetDetail extends Component
 
     public function saveConnection()
     {
-        $roomIds = $this->editingConnection ? [$this->selectedRoom] : (is_array($this->selectedRoom) ? $this->selectedRoom : [$this->selectedRoom]);
+        $roomIds = is_array($this->selectedRoom) ? $this->selectedRoom : [$this->selectedRoom];
 
         $rules = [
             'notes' => 'nullable|string|max:500',
             'connectedAt' => 'nullable|date',
+            'selectedRoom' => 'required|array',
+            'selectedRoom.*' => 'exists:rooms,id',
         ];
-
-        if ($this->editingConnection) {
-            $rules['selectedRoom'] = 'required|exists:rooms,id';
-        } else {
-            $rules['selectedRoom'] = 'required|array';
-            $rules['selectedRoom.*'] = 'exists:rooms,id';
-        }
 
         $this->validate($rules);
 
         try {
             if ($this->editingConnection) {
-                DB::table('asset_room')
-                    ->where('id', $this->editingConnection)
-                    ->update([
-                        'asset_id' => $this->asset->id,
-                        'room_id' => $this->selectedRoom,
-                        'connection_type' => $this->connectionType,
-                        'connected_at' => $this->connectedAt,
-                        'notes' => $this->notes,
-                        'updated_at' => now()
-                    ]);
+                // Get currently connected rooms
+                $currentRoomIds = $this->asset->rooms()->pluck('rooms.id')->toArray();
+
+                // Add new rooms
+                foreach ($roomIds as $roomId) {
+                    if (!in_array($roomId, $currentRoomIds)) {
+                        DB::table('asset_room')->insert([
+                            'asset_id' => $this->asset->id,
+                            'room_id' => $roomId,
+                            'connection_type' => $this->connectionType,
+                            'connected_at' => $this->connectedAt,
+                            'notes' => $this->notes,
+                            'created_at' => now(),
+                            'updated_at' => now()
+                        ]);
+                    } else {
+                        // Update existing connection
+                        DB::table('asset_room')
+                            ->where('asset_id', $this->asset->id)
+                            ->where('room_id', $roomId)
+                            ->update([
+                                'connection_type' => $this->connectionType,
+                                'connected_at' => $this->connectedAt,
+                                'notes' => $this->notes,
+                                'updated_at' => now()
+                            ]);
+                    }
+                }
+
+                // Remove rooms that are no longer selected
+                foreach ($currentRoomIds as $roomId) {
+                    if (!in_array($roomId, $roomIds)) {
+                        DB::table('asset_room')
+                            ->where('asset_id', $this->asset->id)
+                            ->where('room_id', $roomId)
+                            ->delete();
+                    }
+                }
 
                 $this->dispatch('show-toast', [
                     'type' => 'info',
                     'title' => 'به‌روزرسانی شد!',
-                    'description' => 'اتصال با موفقیت به‌روزرسانی شد',
+                    'description' => 'اتصال‌ها با موفقیت به‌روزرسانی شد',
                     'timer' => 3000
                 ]);
             } else {
@@ -307,6 +343,28 @@ class AssetDetail extends Component
         $this->asset = Asset::with(['assetType', 'rooms.unit'])->findOrFail($this->asset->id);
     }
 
+    public function confirmRemoveRoom($roomId, $roomName)
+    {
+        $this->dispatch('confirm-remove-room', roomId: $roomId, roomName: $roomName);
+    }
+
+    public function removeRoomFromConnection($roomId)
+    {
+        DB::table('asset_room')
+            ->where('asset_id', $this->asset->id)
+            ->where('room_id', $roomId)
+            ->delete();
+
+        $this->dispatch('show-toast', [
+            'type' => 'error',
+            'title' => 'حذف شد!',
+            'description' => 'اتصال اتاق با موفقیت حذف شد',
+            'timer' => 3000
+        ]);
+        $this->loadData();
+        $this->asset = Asset::with(['assetType', 'rooms.unit'])->findOrFail($this->asset->id);
+    }
+
     public function closeConnectionModal()
     {
         $this->showConnectionModal = false;
@@ -315,7 +373,7 @@ class AssetDetail extends Component
 
     public function resetConnectionForm()
     {
-        $this->selectedRoom = null;
+        $this->selectedRoom = [];
         $this->connectionType = 'direct';
         $this->connectedAt = '';
         $this->notes = '';

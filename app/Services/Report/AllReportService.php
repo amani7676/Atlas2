@@ -276,6 +276,7 @@ class AllReportService
                         ]);
                 }
             ])
+                ->where('is_displayable', true)
                 ->select('id', 'name', 'code', 'desc', 'color')
                 ->orderByDesc('code')
                 ->get()

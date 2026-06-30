@@ -104,10 +104,18 @@
                     <h3 class="room-connections-title">
                         <i class="fas fa-link me-2"></i>اتصالات به اتاق‌ها
                     </h3>
-                    <button wire:click="openConnectionModal()" class="btn-add-connection">
-                        <i class="fas fa-plus me-2"></i>
-                        اتصال جدید
-                    </button>
+                    <div class="d-flex gap-2">
+                        @if(!$connections->isEmpty())
+                            <button wire:click="editConnections()" class="btn-edit-connection">
+                                <i class="fas fa-edit me-2"></i>
+                                ویرایش اتصالات
+                            </button>
+                        @endif
+                        <button wire:click="openConnectionModal()" class="btn-add-connection">
+                            <i class="fas fa-plus me-2"></i>
+                            اتصال جدید
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -156,49 +164,17 @@
                     </button>
                 </div>
             @else
-                <div class="row g-3">
+                <div class="connected-rooms-list-display">
                     @foreach($connections as $room)
-                        <div class="col-lg-4 col-md-6">
-                            <div class="room-connection-card">
-                                <div class="room-connection-header">
-                                    <div class="room-icon">
-                                        <i class="fas fa-door-open"></i>
-                                    </div>
-                                    <div class="room-info">
-                                        <h5 class="room-name">{{ $room->name }}</h5>
-                                        <p class="room-unit">{{ $room->unit->name ?? 'بدون واحد' }}</p>
-                                    </div>
-                                </div>
-                                <div class="room-connection-body">
-                                    @if($room->pivot->connection_type)
-                                        <div class="connection-detail">
-                                            <label>نوع اتصال:</label>
-                                            <span>{{ $room->pivot->connection_type }}</span>
-                                        </div>
-                                    @endif
-                                    @if($room->pivot->connected_at)
-                                        <div class="connection-detail">
-                                            <label>تاریخ اتصال:</label>
-                                            <span>{{ \Carbon\Carbon::parse($room->pivot->connected_at)->format('Y/m/d') }}</span>
-                                        </div>
-                                    @endif
-                                    @if($room->pivot->notes)
-                                        <div class="connection-detail">
-                                            <label>یادداشت:</label>
-                                            <span>{{ $room->pivot->notes }}</span>
-                                        </div>
-                                    @endif
-                                </div>
-                                <div class="room-connection-footer">
-                                    <button wire:click="editConnection({{ $room->pivot->id }})" class="connection-btn edit">
-                                        <i class="fas fa-edit"></i>
-                                        ویرایش
-                                    </button>
-                                    <button wire:click="confirmDelete({{ $room->pivot->id }})" class="connection-btn delete">
-                                        <i class="fas fa-trash"></i>
-                                        حذف
-                                    </button>
-                                </div>
+                        <div class="room-item-with-delete">
+                            <div class="room-info-display">
+                                <div class="room-name-display">{{ $room->name }}</div>
+                                <div class="room-unit-display">{{ $room->unit->name ?? 'بدون واحد' }}</div>
+                            </div>
+                            <div class="delete-icon-container">
+                                <button wire:click="confirmRemoveRoom({{ $room->id }}, '{{ $room->name }}')" class="delete-icon-btn" title="حذف این اتاق">
+                                    <i class="fas fa-trash"></i>
+                                </button>
                             </div>
                         </div>
                     @endforeach
@@ -298,29 +274,36 @@
                         <label>دارایی</label>
                         <input type="text" class="form-control" value="{{ $asset->name }} ({{ $asset->assetType->name }})" disabled>
                     </div>
-                    @if(!$editingConnection)
+
+                    @if($editingConnection)
                         <div class="form-group mb-3">
-                            <label>اتاق‌ها (چند انتخابی) *</label>
-                            <select wire:model="selectedRoom" class="form-control" multiple>
-                                @foreach($this->filteredRooms as $room)
-                                    <option value="{{ $room->id }}">{{ $room->name }} - {{ $room->unit->name ?? 'بدون واحد' }}</option>
+                            <label>اتاق‌های متصل شده (برای حذف، روی دکمه حذف کلیک کنید)</label>
+                            <div class="connected-rooms-list">
+                                @foreach($this->asset->rooms as $connectedRoom)
+                                    <div class="connected-room-item">
+                                        <span>{{ $connectedRoom->name }} - {{ $connectedRoom->unit->name ?? 'بدون واحد' }}</span>
+                                        <button wire:click="removeRoomFromConnection({{ $connectedRoom->id }})" class="btn-remove-room" title="حذف این اتاق">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
                                 @endforeach
-                            </select>
-                            @error('selectedRoom') <span class="error-message">{{ $message }}</span> @enderror
-                            <small class="text-muted">برای انتخاب چندگانه، کلید Ctrl را نگه دارید</small>
-                        </div>
-                    @else
-                        <div class="form-group mb-3">
-                            <label>اتاق *</label>
-                            <select wire:model="selectedRoom" class="form-control">
-                                <option value="">انتخاب کنید...</option>
-                                @foreach($rooms as $room)
-                                    <option value="{{ $room->id }}">{{ $room->name }} - {{ $room->unit->name ?? 'بدون واحد' }}</option>
-                                @endforeach
-                            </select>
-                            @error('selectedRoom') <span class="error-message">{{ $message }}</span> @enderror
+                                @if($this->asset->rooms->isEmpty())
+                                    <p class="text-muted">هیچ اتاقی متصل نشده است</p>
+                                @endif
+                            </div>
                         </div>
                     @endif
+
+                    <div class="form-group mb-3">
+                        <label>اتاق‌ها (چند انتخابی) *</label>
+                        <select wire:model="selectedRoom" class="form-control" multiple>
+                            @foreach($this->filteredRooms as $room)
+                                <option value="{{ $room->id }}" @if(in_array($room->id, (array)$this->selectedRoom)) selected @endif>{{ $room->name }} - {{ $room->unit->name ?? 'بدون واحد' }}</option>
+                            @endforeach
+                        </select>
+                        @error('selectedRoom') <span class="error-message">{{ $message }}</span> @enderror
+                        <small class="text-muted">برای انتخاب چندگانه، کلید Ctrl را نگه دارید</small>
+                    </div>
                     <div class="form-group mb-3">
                         <label>نوع اتصال</label>
                         <select wire:model="connectionType" class="form-control">
@@ -361,6 +344,12 @@
         @this.on('confirmDelete', (data) => {
             if (confirm('آیا از حذف این اتصال اطمینان دارید؟')) {
                 @this.deleteConnection(data.connectionId);
+            }
+        });
+
+        @this.on('confirm-remove-room', (data) => {
+            if (confirm(`آیا از حذف اتاق "${data.roomName}" اطمینان دارید؟`)) {
+                @this.removeRoomFromConnection(data.roomId);
             }
         });
     </script>
@@ -551,6 +540,23 @@
         .btn-add-connection:hover {
             transform: translateY(-2px);
             box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-edit-connection {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-edit-connection:hover {
+            background: #218838;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.4);
         }
 
         /* Room Filters */
@@ -877,6 +883,116 @@
         .btn-primary:hover {
             transform: translateY(-2px);
             box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        /* Connected Rooms List */
+        .connected-rooms-list {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .connected-room-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 12px;
+            background: white;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .connected-room-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .connected-room-item span {
+            font-size: 14px;
+            color: #333;
+        }
+
+        .btn-remove-room {
+            background: #dc3545;
+            color: white;
+            border: none;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+        }
+
+        /* Connected Rooms List Display */
+        .connected-rooms-list-display {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            padding: 16px 0;
+        }
+
+        .room-item-with-delete {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+            transition: all 0.3s;
+        }
+
+        .room-item-with-delete:hover {
+            background: #e9ecef;
+            border-color: #d0d0d0;
+        }
+
+        .room-info-display {
+            flex: 1;
+        }
+
+        .room-name-display {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 4px;
+        }
+
+        .room-unit-display {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .delete-icon-container {
+            margin-right: 12px;
+            display: flex;
+            align-items: center;
+        }
+
+        .delete-icon-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 16px;
+            padding: 0;
+        }
+
+        .delete-icon-btn:hover {
+            background: #c82333;
+            transform: scale(1.1);
+        }
+
+        .delete-icon-btn i {
+            pointer-events: none;
         }
 
         /* Responsive Design */

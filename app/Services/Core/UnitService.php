@@ -49,11 +49,16 @@ class UnitService
             'rooms.beds.contracts.resident.notes',
             'rooms.beds.contracts.bed.room.unit',
         ])
+            ->where('is_displayable', true)
             ->get()
             ->flatMap(function ($unit) {
+                // Filter rooms that are displayable
+                $displayableRooms = $unit->rooms->filter(function ($room) {
+                    return $room->is_displayable ?? true;
+                });
                 $results = [];
                 
-                foreach ($unit->rooms as $room) {
+                foreach ($displayableRooms as $room) {
                     foreach ($room->beds as $bed) {
                         foreach ($bed->contracts as $contract) {
                             $resident = $contract->resident;

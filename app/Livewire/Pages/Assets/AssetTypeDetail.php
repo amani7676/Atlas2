@@ -407,6 +407,27 @@ class AssetTypeDetail extends Component
         $this->loadData();
     }
 
+    public function confirmRemoveRoom($assetId, $roomId, $roomName)
+    {
+        $this->dispatch('confirm-remove-room', assetId: $assetId, roomId: $roomId, roomName: $roomName);
+    }
+
+    public function removeRoomFromAsset($assetId, $roomId)
+    {
+        DB::table('asset_room')
+            ->where('asset_id', $assetId)
+            ->where('room_id', $roomId)
+            ->delete();
+
+        $this->dispatch('show-toast', [
+            'type' => 'error',
+            'title' => 'حذف شد!',
+            'description' => 'اتصال اتاق با موفقیت حذف شد',
+            'timer' => 3000
+        ]);
+        $this->loadData();
+    }
+
     public function closeConnectionModal()
     {
         $this->showConnectionModal = false;

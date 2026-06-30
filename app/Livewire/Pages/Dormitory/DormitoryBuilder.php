@@ -20,6 +20,7 @@ class DormitoryBuilder extends Component
     public $unitDesc = '';
     public $unitColor = '#667eea'; // رنگ پیش‌فرض
     public $roomColorForUnit = '#f093fb'; // رنگ پیش‌فرض برای اتاق‌های این واحد
+    public $unitIsDisplayable = true; // نمایش در لیست اقامتگران
     public $editingUnitId = null;
     public $showUnitModal = false;
     
@@ -33,9 +34,10 @@ class DormitoryBuilder extends Component
     // Room form properties
     public $roomName = '';
     public $roomCode = '';
-    public $bedCount = 1;
+    public $bedCount = 0;
     public $roomDesc = '';
     public $roomColor = '#f093fb'; // رنگ پیش‌فرض
+    public $roomIsDisplayable = true; // نمایش در لیست اقامتگران
     public $editingRoomId = null;
     public $showRoomModal = false;
     
@@ -212,6 +214,8 @@ class DormitoryBuilder extends Component
             // دریافت رنگ اتاق‌ها از اولین اتاق واحد (اگر وجود داشته باشد)
             $firstRoom = $unit->rooms->first();
             $this->roomColorForUnit = !empty($firstRoom->color) ? $firstRoom->color : '#f093fb';
+            // لود وضعیت نمایش
+            $this->unitIsDisplayable = $unit->is_displayable ?? true;
             $this->showUnitModal = true;
         }
     }
@@ -281,6 +285,7 @@ class DormitoryBuilder extends Component
             'unitDesc' => 'nullable|string',
             'unitColor' => 'nullable|string|regex:/^#[0-9a-f]{6}$/i',
             'roomColorForUnit' => 'nullable|string|regex:/^#[0-9a-f]{6}$/i',
+            'unitIsDisplayable' => 'boolean',
         ], [
             'unitName.required' => 'نام واحد الزامی است',
             'unitCode.required' => 'کد واحد الزامی است',
@@ -300,6 +305,7 @@ class DormitoryBuilder extends Component
                     'code' => $this->unitCode,
                     'desc' => $this->unitDesc,
                     'color' => $unitColorValue,
+                    'is_displayable' => $this->unitIsDisplayable,
                 ]);
                 
                 // به‌روزرسانی رنگ همه اتاق‌های این واحد
@@ -321,6 +327,7 @@ class DormitoryBuilder extends Component
                     'code' => $this->unitCode,
                     'desc' => $this->unitDesc,
                     'color' => $unitColorValue,
+                    'is_displayable' => $this->unitIsDisplayable,
                 ]);
                 
                 // برای واحد جدید، رنگ اتاق‌ها در زمان ایجاد اتاق اعمال می‌شود
@@ -371,6 +378,7 @@ class DormitoryBuilder extends Component
         $this->unitDesc = '';
         $this->unitColor = '#667eea';
         $this->roomColorForUnit = '#f093fb';
+        $this->unitIsDisplayable = true;
         $this->editingUnitId = null;
     }
     
@@ -395,6 +403,7 @@ class DormitoryBuilder extends Component
                 $this->roomCode = $room->code ?? '';
                 $this->bedCount = $room->bed_count;
                 $this->roomDesc = $room->desc ?? '';
+                $this->roomIsDisplayable = $room->is_displayable ?? true;
             }
         }
         $this->showRoomModal = true;
@@ -409,12 +418,13 @@ class DormitoryBuilder extends Component
         $this->validate([
             'roomName' => 'required|string|max:255',
             'roomCode' => 'nullable|integer',
-            'bedCount' => 'required|integer|min:1|max:100',
+            'bedCount' => 'required|integer|min:0|max:100',
             'roomDesc' => 'nullable|string',
+            'roomIsDisplayable' => 'boolean',
         ], [
             'roomName.required' => 'نام اتاق الزامی است',
             'bedCount.required' => 'تعداد تخت الزامی است',
-            'bedCount.min' => 'تعداد تخت باید حداقل 1 باشد',
+            'bedCount.min' => 'تعداد تخت نمی‌تواند کمتر از 0 باشد',
             'bedCount.max' => 'تعداد تخت نمی‌تواند بیشتر از 100 باشد',
         ]);
         
@@ -433,6 +443,7 @@ class DormitoryBuilder extends Component
                         'bed_count' => $this->bedCount,
                         'desc' => $this->roomDesc,
                         'color' => $roomColor,
+                        'is_displayable' => $this->roomIsDisplayable,
                     ]);
                     
                     // اگر تعداد تخت‌ها تغییر کرد
@@ -488,9 +499,10 @@ class DormitoryBuilder extends Component
                     'bed_count' => $this->bedCount,
                     'desc' => $this->roomDesc,
                     'color' => $roomColor,
+                    'is_displayable' => $this->roomIsDisplayable,
                 ]);
                 
-                // ایجاد تخت‌ها به تعداد مشخص شده
+                // ایجاد تخت‌ها به تعداد مشخص شده (فقط اگر تعداد تخت بیشتر از 0 باشد)
                 for ($bedNumber = 1; $bedNumber <= $this->bedCount; $bedNumber++) {
                     Bed::create([
                         'room_id' => $room->id,
@@ -537,8 +549,9 @@ class DormitoryBuilder extends Component
     {
         $this->roomName = '';
         $this->roomCode = '';
-        $this->bedCount = 1;
+        $this->bedCount = 0;
         $this->roomDesc = '';
+        $this->roomIsDisplayable = true;
         $this->editingRoomId = null;
     }
     

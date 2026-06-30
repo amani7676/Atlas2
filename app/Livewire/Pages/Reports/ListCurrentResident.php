@@ -41,7 +41,7 @@ class ListCurrentResident extends Component
                 $query->where('type', 'room');
             },
             'rooms.beds.contracts.resident'
-        ])->get();
+        ])->where('is_displayable', true)->get();
 
         // تنظیم اتاق‌ها برای نمایش در جداول
         $this->rooms = collect();

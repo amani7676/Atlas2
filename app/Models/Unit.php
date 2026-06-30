@@ -12,7 +12,12 @@ class Unit extends Model
         'name',
         'code',
         'desc',
-        'color'
+        'color',
+        'is_displayable'
+    ];
+
+    protected $casts = [
+        'is_displayable' => 'boolean',
     ];
 
     // Relations

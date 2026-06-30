@@ -50,10 +50,10 @@
                                         $isValid = preg_match('/^09[0-9]{9}$/', $cleanPhone);
                                     @endphp
                                     @if($isValid)
-                                        <span class="text-success">
+                                        <a href="tel:{{ $cleanPhone }}" class="text-success text-decoration-none" style="cursor: pointer;">
                                             <i class="fas fa-phone me-1"></i>
                                             {{ $phone }}
-                                        </span>
+                                        </a>
                                     @else
                                         <span class="text-danger text-decoration-line-through">
                                             <i class="fas fa-exclamation-triangle me-1"></i>

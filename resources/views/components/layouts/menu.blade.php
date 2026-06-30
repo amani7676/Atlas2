@@ -482,4 +482,56 @@ function showSmsCreditError(message) {
     creditCircle.className = 'sms-credit-circle bg-secondary';
     creditCircle.title = 'خطا در بارگذاری اعتبار پیامک';
 }
+
+// Fix dropdown toggle on mobile
+document.addEventListener('DOMContentLoaded', function() {
+    const dropdownToggles = document.querySelectorAll('.dropdown-toggle');
+    const navLinks = document.querySelectorAll('.material-link:not(.dropdown-toggle)');
+    
+    dropdownToggles.forEach(function(toggle) {
+        toggle.addEventListener('click', function(e) {
+            const isMobile = window.innerWidth <= 991.98;
+            if (isMobile) {
+                const dropdownMenu = this.nextElementSibling;
+                const isExpanded = this.classList.contains('show') || dropdownMenu.classList.contains('show');
+                
+                // Close all other dropdowns first
+                document.querySelectorAll('.dropdown-menu').forEach(function(menu) {
+                    if (menu !== dropdownMenu) {
+                        menu.classList.remove('show');
+                        menu.previousElementSibling.classList.remove('show');
+                        menu.previousElementSibling.setAttribute('aria-expanded', 'false');
+                    }
+                });
+                
+                // Toggle current dropdown
+                if (isExpanded) {
+                    dropdownMenu.classList.remove('show');
+                    this.classList.remove('show');
+                    this.setAttribute('aria-expanded', 'false');
+                    e.stopPropagation();
+                } else {
+                    dropdownMenu.classList.add('show');
+                    this.classList.add('show');
+                    this.setAttribute('aria-expanded', 'true');
+                    e.stopPropagation();
+                }
+            }
+        });
+    });
+    
+    // Close all dropdowns when clicking on non-dropdown menu items
+    navLinks.forEach(function(link) {
+        link.addEventListener('click', function() {
+            const isMobile = window.innerWidth <= 991.98;
+            if (isMobile) {
+                document.querySelectorAll('.dropdown-menu').forEach(function(menu) {
+                    menu.classList.remove('show');
+                    menu.previousElementSibling.classList.remove('show');
+                    menu.previousElementSibling.setAttribute('aria-expanded', 'false');
+                });
+            }
+        });
+    });
+});
 </script>
